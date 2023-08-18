@@ -45,22 +45,10 @@ class ConfigWindow {
     void save_configuration();
 
  private:
-    Fl_Group *page_sd_;
-    Fl_Group *page_upscalers_;
     Fl_Group *page_dirs_;
     Fl_Tabs *tabs_;
-    Fl_Check_Button *nsfw_check_;
-    Fl_Check_Button *privacy_check_;
-    Fl_Check_Button *float16_check_;
-    Fl_Check_Button *gpu_check_;
-    Fl_Choice *schedulers_;
-    Fl_Choice *controlnetCount_;
-    Fl_Choice *gfpgan_arch_;
-    Fl_Check_Button *gfpgan_only_center_faces_;
-    Fl_Float_Input *gfpgan_weight_;
     Fl_Input *add_model_dir_;
     Fl_Input *add_lora_dir_;
-    Fl_Input *add_emb_dir_;
 
     ModalWindow *window_ = NULL;
     std::unique_ptr<Button> btnOk_;

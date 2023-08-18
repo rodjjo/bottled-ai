@@ -9,8 +9,8 @@ safetensors==0.3.1
 GitPython==3.1.31
 pytorch_lightning==2.0.2
 torchdiffeq==0.2.3
-einops
-tdqm
+markdown==3.4.4
+einops==0.6.1
 pynvml==11.5.0
 # ctransformers
 # https://github.com/jllllll/ctransformers-cuBLAS-wheels/releases/download/AVX2/ctransformers-0.2.22+cu117-py3-none-any.whl

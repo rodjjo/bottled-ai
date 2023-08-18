@@ -96,29 +96,6 @@ void configure_chooser(Fl_Native_File_Chooser *dialog, const char *filter, const
     dialog->filter(filter);
 }
 
-std::string choose_image_to_open(std::string* current_dir) {
-    if (bottled_ai::getConfig().getPrivacyMode()) {
-        return choose_image_to_open_fl(current_dir);
-    }
-    Fl_Native_File_Chooser dialog(Fl_Native_File_Chooser::BROWSE_FILE);
-    configure_chooser(&dialog, kIMAGE_FILES_FILTER, "Select an image to open", false);
-    return execute_file_choose(&dialog, current_dir, NULL);
-}
-
-std::string choose_image_to_save(std::string* current_dir) {
-    if (bottled_ai::getConfig().getPrivacyMode()) {
-        return choose_image_to_save_fl(current_dir);
-    }
-    Fl_Native_File_Chooser dialog(Fl_Native_File_Chooser::BROWSE_SAVE_FILE);
-    configure_chooser(&dialog, kIMAGE_FILES_FILTER, "Save the image", true);
-    std::string result = execute_file_choose(&dialog, current_dir, ".png");
-    if (!result.empty() && path_exists(result.c_str())) {
-        if (!ask("Do you want to replace the destination file ?")) {
-            result.clear();
-        }
-    }
-    return result;
-}
 
 std::string executeChooser(Fl_File_Chooser *fc) {
     fc->preview(0);
@@ -128,43 +105,6 @@ std::string executeChooser(Fl_File_Chooser *fc) {
     }
     if (fc->value()) return fc->value();
     return std::string();
-}
-
-std::string choose_image_to_open_fl(std::string* current_dir) {
-    if (!path_exists(current_dir->c_str())) {
-        *current_dir = "";
-    }
-    Fl_File_Chooser dialog(current_dir->c_str(), kIMAGE_FILES_FILTER_FL, Fl_File_Chooser::SINGLE, "Open image");
-    std::string result = executeChooser(&dialog);
-    if (!result.empty()) {
-        size_t latest = result.find_last_of("/\\");
-        *current_dir = result.substr(0, latest);
-    }
-    return result;
-}
-
-std::string choose_image_to_save_fl(std::string* current_dir) {
-    if (!path_exists(current_dir->c_str())) {
-        *current_dir = "";
-    }
-    Fl_File_Chooser dialog(current_dir->c_str(), kIMAGE_FILES_FILTER_FL, Fl_File_Chooser::SINGLE | Fl_File_Chooser::CREATE, "Save image");
-    std::string result = executeChooser(&dialog);
-    
-    if (!result.empty() && path_exists(result.c_str())) {
-        if (!ask("Do you want to replace the destination file ?")) {
-            result.clear();
-        } else {
-            size_t latest = result.find_last_of("/\\");
-            *current_dir = result.substr(0, latest);
-        }
-    }
-
-    return result;
-}
-
-
-bool pickup_color(const char* title, uint8_t *r, uint8_t *g, uint8_t *b) {
-    return fl_color_chooser(title, *r, *g, *b) == 1;
 }
 
 } // namespace bottled_ai

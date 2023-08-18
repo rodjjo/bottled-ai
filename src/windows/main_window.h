@@ -22,6 +22,7 @@
 #include "src/windows/main_menu.h"
 #include "src/python/wrapper.h"
 #include "src/controls/button.h"
+#include "src/data/chat_store.h"
 
 namespace bottled_ai {
 
@@ -36,29 +37,28 @@ class MainWindow : Fl_Menu_Window {
    int handle(int event) override;
 
  private:
+  static void generate_text_cb(void *cbdata);
+  static const char *link_clicked_cb(Fl_Widget *w, const char *uri);
+  const char *link_clicked_cb(const char *uri);
   void initMenubar();
   void initMenu();
   void alignComponents();
   void editConfig();
-  void updateStatusbar();
   void generate_text();
   void download_model();
   void load_model_list();
   void configure_model();
+  void clear_all();
   
  private:
     Fl_Group *menuPanel_ = NULL;
-    Fl_Group *bottomPanel_ = NULL;
-    Fl_Box * label_zoom_ = NULL;
-    Fl_Box * label_select_ = NULL;
-    Fl_Box * label_scroll_ = NULL;
-    Fl_Box * label_size_ = NULL;
     Fl_Multiline_Input *input_ = NULL;
     Fl_Help_View *response_ = NULL;
     Fl_Choice *models_;
     std::unique_ptr<Button> btnDownload_;
     std::unique_ptr<Button> btnModelConf_;
     std::unique_ptr<Button> btnSend_;
+    std::unique_ptr<ChatStore> chat_;
     MainMenu *menu_ = NULL;
 };
 

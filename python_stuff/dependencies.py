@@ -34,7 +34,9 @@ def have_dependencies():
         'accelerate',
         'safetensors',
         'future',
-        'einops'
+        'einops',
+        'torch',
+        'markdown'
     ]
     for l in lib_names:
         if not os.path.exists(os.path.join(lib_dir, l)):

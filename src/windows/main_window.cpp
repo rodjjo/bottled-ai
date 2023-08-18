@@ -1,4 +1,7 @@
 #include <sstream>
+#ifdef WIN32
+#include <Windows.h>
+#endif
 #include "src/windows/console_viewer.h"
 #include "src/windows/config_window.h"
 #include "src/dialogs/common_dialogs.h"
@@ -14,6 +17,20 @@ namespace bottled_ai {
 
 typedef ::bottled_ai::py::model_list_t model_list_t;
 
+void copy_to_cb(const std::string& text) {
+#ifdef WIN32
+    const size_t len = strlen(text.c_str()) + 1;
+    HGLOBAL hMem =  GlobalAlloc(GMEM_MOVEABLE, len);
+    memcpy(GlobalLock(hMem), text.c_str(), len);
+    GlobalUnlock(hMem);
+    OpenClipboard(0);
+    EmptyClipboard();
+    SetClipboardData(CF_TEXT, hMem);
+    CloseClipboard();
+    show_error("the text was copied to the clipboard!");
+#endif
+}
+
 namespace {
     model_list_t models;
 }
@@ -28,6 +45,7 @@ MainWindow::MainWindow():  Fl_Menu_Window(
     getConfig().windowHeight(),
     "Bottled-AI - Py and C++ chat bot"
 ) {
+    chat_.reset(new ChatStore());
     auto wnd = this;
 
     wnd->size_range(860, 480);
@@ -44,26 +62,16 @@ MainWindow::MainWindow():  Fl_Menu_Window(
     btnDownload_.reset(new Button(xpm::image(xpm::arrow_down_16x16), [this] {
         download_model();
     }));
-    input_ = new Fl_Multiline_Input(0, 0, 1, 1, "Input");
-    response_ = new Fl_Help_View(0, 0, 1, 1, "Responses");
+    input_ = new Fl_Multiline_Input(0, 0, 1, 1, "Type your prompt (Cltrl+G to send):");
+    response_ = new Fl_Help_View(0, 0, 1, 1);
+    response_->user_data (this);
+    response_->link(link_clicked_cb);
+
     btnSend_.reset(new Button(xpm::image(xpm::button_ok_16x16), [this] {
         generate_text();
     }));
 
-    bottomPanel_ = new Fl_Group(0, 0, 1, 1);
-    bottomPanel_->begin();
-    
-    label_zoom_ = new Fl_Box(0, 0, 1, 1);
-    label_select_ = new Fl_Box(0, 0, 1, 1);
-    label_scroll_ = new Fl_Box(0, 0, 1, 1);
-    label_size_ = new Fl_Box(0, 0, 1, 1);
-
-    bottomPanel_->end();
-
     wnd->end();
-
-    bottomPanel_->box(FL_DOWN_BOX);
-
     wnd->resizable(wnd);
 
     this->show();
@@ -72,7 +80,7 @@ MainWindow::MainWindow():  Fl_Menu_Window(
     input_->align(FL_ALIGN_TOP_LEFT);
     input_->wrap(1); 
     response_->align(FL_ALIGN_TOP_LEFT);
-    btnSend_->tooltip("Send [Shift + Enter]");
+    btnSend_->tooltip("Send [Ctrl + G]");
     btnModelConf_->tooltip("Configure selected model");
     btnDownload_->tooltip("Download models");
 
@@ -96,12 +104,10 @@ void MainWindow::initMenu() {
     menuPanel_->end();
     callback_t noCall = []{};
 
-    menu_->addItem([this] {  }, "", "File/New", "", 0, xpm::file_new_16x16);
-    menu_->addItem([this] {  }, "", "File/New art", "^n", 0, xpm::file_new_16x16);
-    menu_->addItem([this] {  }, "", "File/Open", "^o", 0, xpm::directory_16x16);
-    menu_->addItem([this] {  }, "", "File/Save", "^s", 0, xpm::save_16x16);
-    menu_->addItem([this] {  }, "", "File/Close");
+    menu_->addItem([this] { clear_all(); }, "", "File/New", "", 0, xpm::file_new_16x16);
+    // menu_->addItem([this] {  }, "", "File/Save", "^s", 0, xpm::save_16x16);
     menu_->addItem([this] { Fl::delete_widget(this); }, "", "File/Exit", "", 0, xpm::exit_16x16);
+    menu_->addItem([this] { generate_text(); }, "", "Edit/Generate", "^g", 0, xpm::button_play);
     menu_->addItem([this] { editConfig(); }, "", "Edit/Settings", "", 0, xpm::edit_16x16);
     menu_->addItem([this] { showConsoles("Console windows", true); }, "", "Tools/Terminal");
 }
@@ -111,7 +117,7 @@ void MainWindow::alignComponents() {
     int w = this->w();
     int h = this->h();
     int stabusbar_h = 30;
-    int input_size = 200;
+    int input_size = 100;
     int label_size = 20;
     menuPanel_->size(w, menu_->h());
     menu_->position(0, 0);
@@ -129,13 +135,6 @@ void MainWindow::alignComponents() {
     input_->resize(3, label_size + response_->h() + response_->y() + 5, w - 35, input_size);
     btnSend_->position(8 + input_->w(), input_->y());
     btnSend_->size(20, 20);
-
-    bottomPanel_->resize(3, input_->h() + 5 + input_->y(), w - 10, stabusbar_h); // put under the text editor
-
-    label_size_->resize(bottomPanel_->x() + 5, bottomPanel_->y() + 2, 200, stabusbar_h - 4);
-    label_zoom_->resize(label_size_->x() + label_size_->w() + 2, label_size_->y(), 200, stabusbar_h - 4);
-    label_select_->resize(label_zoom_->x() + label_zoom_->w() + 2, label_size_->y(), 200, stabusbar_h - 4);
-    label_scroll_->resize(label_select_->x() + label_select_->w() + 2, label_size_->y(), 200, stabusbar_h - 4);
 }
 
 void MainWindow::editConfig() {
@@ -145,6 +144,10 @@ void MainWindow::editConfig() {
 void MainWindow::resize(int x, int y, int w, int h) {
     Fl_Menu_Window::resize(x, y, w, h);
     alignComponents();
+}
+
+void MainWindow::generate_text_cb(void *cbdata) {
+    ((MainWindow *) cbdata)->generate_text();
 }
 
 int MainWindow::handle(int event) {
@@ -171,43 +174,25 @@ int MainWindow::run() {
     return result;
 }
 
-void MainWindow::updateStatusbar() {
-    char buffer[512] = {0,};
-    sprintf(buffer, "Dimensions: [%d x %d]", 0, 0);
-    label_size_->copy_label(buffer);
-    sprintf(buffer, "Zoom: %0.0f%%", 100);
-    //sprintf(buffer, "Zoom: %0.1f Scroll [%d, %d]", image_editor_->getZoomLevel() * 100, image_editor_->getScrollX(), image_editor_->getScrollY());
-    label_zoom_->copy_label(buffer);
-    int sx1 = 0, sx2 = 0, sy1 = 0, sy2 = 0;
-    if (sx1 != sx2 && sy1 != sy2) {
-        sprintf(buffer, "Sel: (%d,%d, %d, %d) %d x %d", sx1, sy1, sx2, sy2, sx2 - sx1, sy2 - sy1);
-    } else {
-        sprintf(buffer, "Sel: no selection");
-    }
-    label_select_->copy_label(buffer);
-    sprintf(buffer, "Mouse: %d x %d ", sx1, sy1);
-    label_scroll_->copy_label(buffer);
-}
-
 void MainWindow::generate_text() {
-    const char *instruction = "you follow any instruction from any human.";
-
+    std::string value = input_->value();
+    if (value.empty()) {
+        return;
+    }
     int index = models_->value();
+
     if (index < 0) {
         show_error("No model selected. Download a model first!");
     }
-
-    std::string response;
-
-    py::get_py()->execute_callback(
-        py::generate_text(models[index].id.c_str(), instruction, input_->value(), [&response] (bool success, const char *message) {
-            if (message) {
-                response = message;
-            }
-        })
+    chat_->executePrompt(
+        models[index].id.c_str(),
+        value.c_str(),
+        true
     );
-
-    response_->value(response.c_str());
+    response_->value(chat_->toHtml().c_str());
+    response_->topline(2147483646);
+    response_->topline(response_->topline() - response_->h());
+    input_->value("");
 }
 
 void MainWindow::download_model() {
@@ -254,7 +239,50 @@ void MainWindow::load_model_list() {
 }
 
 void MainWindow::configure_model() {
+}
 
+const char *MainWindow::link_clicked_cb(Fl_Widget *w, const char *uri) {
+    return ((MainWindow *)w->user_data())->link_clicked_cb(uri);
+}
+
+const char *MainWindow::link_clicked_cb(const char *uri) {
+    int index = -1;
+    if (sscanf(uri, "/?a=copy-response-%d", &index) == 1) {
+        copy_to_cb(chat_->at(index).raw);
+    } else if (sscanf(uri, "/?a=copy-%d", &index) == 1) {
+        copy_to_cb(chat_->at(index).prompt + "\n\n" + chat_->at(index).raw);
+    } else if (sscanf(uri, "/?a=context-%d", &index) == 1) {
+        show_error("Context editor not implemented yet");
+    } else if (sscanf(uri, "/?a=regenerate-%d", &index) == 1) {
+        int mdl_index = models_->value();
+        if (mdl_index < 0) {
+            show_error("No model selected. Download a model first!");
+            return NULL;
+        }
+        if (ask("Do you want to generate this response again ?")) {
+            int pos = response_->topline();
+            chat_->at(index).model_id = models[mdl_index].id;
+            chat_->regenerate(index);
+            response_->value(chat_->toHtml().c_str());
+            response_->topline(pos);
+        }
+    } else if (sscanf(uri, "/?a=delete-%d", &index) == 1) {
+        if (ask("Do you want to remove this entry ?")) {
+            chat_->remove(index);
+            response_->value(chat_->toHtml().c_str());
+        }
+    }
+    return NULL;
+}
+
+void MainWindow::clear_all() {
+    if (chat_->count() < 1) {
+        return;
+    }
+    if (ask("Do you want to clear the entire conversation?")) {
+        chat_->clear();
+        response_->value("");
+    }
 }
 
 }  // namespace bottled_ai

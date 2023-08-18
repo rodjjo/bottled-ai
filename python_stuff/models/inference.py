@@ -6,6 +6,7 @@ import transformers
 
 from models.loader import get_model
 from models.listing import MODELS_MAP
+from text_helper.text_helper import convert2html
 
 
 from bottled_ai import progress_text, progress_title, progress, progress_canceled
@@ -72,21 +73,26 @@ def set_manual_seed(seed):
     return seed
 
 @torch.no_grad()
-def generate_text(model_id: str, context: str, prompt: str) -> dict:
-    global pipeline
+def generate_text(model_id: str, params: dict) -> dict:
+    prompt = params['prompt']
+    context = params.get('context') or 'You are a helpful AI assistant.'
+    max_new_tokens = params.get('max_new_tokens', 512)
+    temperature = params.get('temperature', 1)
+    top_p = params.get('top_p', 1)
+    top_k = params.get('top_k', 0)
+    repetition_penalty = params.get('repetition_penalty', 1)
+
     progress_title("Loading the model")
     progress(0, 100)
     model, tokenizer = get_model(model_id)
     if model is None:
         return {
-            "response": "no model loaded",
+            "html": "no model loaded",
+            "raw": "no model loaded"
         }
     progress_title("Generating text")
 
     set_manual_seed(-1)
-
-    if not context:
-        context = 'You are a helpful AI assistant.'
 
     cfg = MODELS_MAP[model_id]
     fallBackTemplate = '{instruction}\n\nUSER: {input}\nASSISTANT:'
@@ -106,18 +112,17 @@ def generate_text(model_id: str, context: str, prompt: str) -> dict:
         prompt = tokenize_single_input(tokenizer, prompt)
 
     response_prefix = cfg['response_after']
-    max_tokens = 3000 if '7B' in model_id else 1024
     
     # inputs = tokenizer(prompt, return_tensors="pt").input_ids.to('cuda:0')
     inputs = tokenizer.encode(str(prompt), return_tensors='pt', add_special_tokens=True).to('cuda:0')
 
     output = model.generate(
         inputs=inputs,
-        max_new_tokens=max_tokens,
-        temperature=1,
-        top_p=1,
-        top_k=0,
-        repetition_penalty=1,
+        max_new_tokens=max_new_tokens,
+        temperature=temperature,
+        top_p=top_p,
+        top_k=top_k,
+        repetition_penalty=repetition_penalty,
         streamer=Streamer(tokenizer),
         stopping_criteria=transformers.StoppingCriteriaList() + [
             CanceledChecker()
@@ -139,5 +144,6 @@ def generate_text(model_id: str, context: str, prompt: str) -> dict:
     del inputs
     gc.collect()
     return {
-        "response": response
+        "html": convert2html(response),
+        "raw": response
     }
