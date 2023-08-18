@@ -1,7 +1,6 @@
 try:
-    from huggingface_hub.utils import tqdm as tqdm_module
-    from huggingface_hub.utils.tqdm import tqdm as old_tqdm
-
+    from transformers.utils import hub as tqdm_module
+    from transformers.utils.hub import tqdm as old_tqdm
     
     from bottled_ai import progress
 

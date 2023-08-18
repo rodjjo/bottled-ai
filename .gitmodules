@@ -4,15 +4,9 @@
 [submodule "nlohmann_json"]
 	path = dependencies/nlohmann_json
 	url = git@github.com:nlohmann/json.git
-[submodule "cimg"]
-	path = dependencies/cimg
-	url = git@github.com:GreycLab/CImg.git
 [submodule "pybind11"]
 	path = dependencies/pybind11
 	url = https://github.com/pybind/pybind11.git
 [submodule "future"]
 	path = dependencies/python-future
 	url = https://github.com/rodjjo/python-future.git
-[submodule "filterpy"]
-	path = dependencies/filterpy
-	url = https://github.com/rodjjo/filterpy.git

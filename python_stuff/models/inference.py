@@ -1,28 +1,143 @@
+import torch
+import gc
+import random
+from datetime import datetime
+import transformers
+
 from models.loader import get_model
-from transformers import TextGenerationPipeline
-
-from bottled_ai import progress_title, progress
+from models.listing import MODELS_MAP
 
 
-def generate_text(model_id: str, input: str) -> dict:
+from bottled_ai import progress_text, progress_title, progress, progress_canceled
+
+class Streamer:
+    def __init__(self, tokenizer, skip_special_tokens=True):
+        self.tokenizer = tokenizer
+        self.firstRun = True
+        self.skip_special_tokens = skip_special_tokens
+
+    def decode(self, output_ids):
+        return self.tokenizer.decode(output_ids, self.skip_special_tokens)
+
+    def put(self, output_ids):
+        if self.firstRun:
+            self.firstRun = False
+            return
+        reply = self.decode(output_ids[0])
+        # Prevent LlamaTokenizer from skipping a space
+        if type(self.tokenizer) in [transformers.LlamaTokenizer, transformers.LlamaTokenizerFast] and len(output_ids) > 0:
+            try:
+                element = [int(xs) for xs in output_ids[0]]
+            except TypeError:
+                element = [int(output_ids.item())]
+            if self.tokenizer.convert_ids_to_tokens(element)[0].startswith('▁'):
+                reply = ' ' + reply 
+        progress_text(reply)
+
+    def end(self):
+        pass
+
+
+class CanceledChecker:
+    def __call__(self, *args, **kwargs) -> bool:
+        return progress_canceled()
+
+
+def tokenize_single_input(tokenizer, prompt):
+    # OpenChat V2
+    human_prefix = "User:"
+    prefix    = "Assistant GPT4:"
+    eot_token = "<|end_of_turn|>"
+    bos_token = "<s>"
+
+    def _tokenize(text):
+        return tokenizer.convert_tokens_to_ids(tokenizer._tokenize(text))
+
+    def _tokenize_special(special_name):
+        return tokenizer.convert_tokens_to_ids(special_name)
+
+    return [_tokenize_special(bos_token)] + _tokenize(human_prefix) + _tokenize(prompt) + [_tokenize_special(eot_token)] + \
+          _tokenize(prefix)
+
+
+def set_manual_seed(seed):
+    seed = int(seed)
+    if seed == -1:
+        seed = random.randint(1, 2**31)
+
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+
+    return seed
+
+@torch.no_grad()
+def generate_text(model_id: str, context: str, prompt: str) -> dict:
     global pipeline
-    progress_title("Generating text. Please wait")
+    progress_title("Loading the model")
     progress(0, 100)
     model, tokenizer = get_model(model_id)
     if model is None:
         return {
             "response": "no model loaded",
         }
-    pipeline = TextGenerationPipeline(model=model, tokenizer=tokenizer, device='cuda:0')
-    response = pipeline(input, max_new_tokens=2048)[0]["generated_text"]
-    response = response.split("### Response:\n", maxsplit=1)
-    if len(response) == 2:
-        response = response[1]
+    progress_title("Generating text")
+
+    set_manual_seed(-1)
+
+    if not context:
+        context = 'You are a helpful AI assistant.'
+
+    cfg = MODELS_MAP[model_id]
+    fallBackTemplate = '{instruction}\n\nUSER: {input}\nASSISTANT:'
+    for template in cfg['templates']:
+        if '{instruction}' in template and '{input}' in template:
+            hasTemplate = True
+            fallBackTemplate = template
+            break
+        elif '{input}' in template:
+            fallBackTemplate = template
+    if '{instruction}' in fallBackTemplate:
+        prompt = fallBackTemplate.format(instruction=context, input=prompt)
     else:
-        response = response[0]
-    response = response.replace('. ', '.\n')
-    response = response.replace('Mr.\n', 'Mr. ')
-    response = response.replace('Mrs.\n', 'Mrs. ')
+        prompt = fallBackTemplate.format(input=prompt)
+    
+    if MODELS_MAP[model_id]['loader'] == 'auto_gpt_openchat':
+        prompt = tokenize_single_input(tokenizer, prompt)
+
+    response_prefix = cfg['response_after']
+    max_tokens = 3000 if '7B' in model_id else 1024
+    
+    # inputs = tokenizer(prompt, return_tensors="pt").input_ids.to('cuda:0')
+    inputs = tokenizer.encode(str(prompt), return_tensors='pt', add_special_tokens=True).to('cuda:0')
+
+    output = model.generate(
+        inputs=inputs,
+        max_new_tokens=max_tokens,
+        temperature=1,
+        top_p=1,
+        top_k=0,
+        repetition_penalty=1,
+        streamer=Streamer(tokenizer),
+        stopping_criteria=transformers.StoppingCriteriaList() + [
+            CanceledChecker()
+        ]
+    )[0]
+
+    new_tokens = len(output) - len(inputs[0])
+    response = tokenizer.decode(output[-new_tokens:], True)
+
+    if 'ASSISTANT:' in response_prefix:
+        response = response.split('\n');
+        for i, v in enumerate(response):
+            if not v.startswith(response_prefix):
+                continue
+            v = v.split(response_prefix, maxsplit=1)
+            response[i] = v[0] if len(v) < 2 else v[1]
+        response = '\n'.join(response)
+
+    del inputs
+    gc.collect()
     return {
         "response": response
     }

@@ -17,6 +17,7 @@
 #include <FL/fl_ask.H>
 #include <FL/Fl_Tabs.H>
 #include <FL/Fl_Multiline_Input.H>
+#include <FL/Fl_Help_View.H>
 
 #include "src/windows/main_menu.h"
 #include "src/python/wrapper.h"
@@ -43,6 +44,7 @@ class MainWindow : Fl_Menu_Window {
   void generate_text();
   void download_model();
   void load_model_list();
+  void configure_model();
   
  private:
     Fl_Group *menuPanel_ = NULL;
@@ -52,9 +54,10 @@ class MainWindow : Fl_Menu_Window {
     Fl_Box * label_scroll_ = NULL;
     Fl_Box * label_size_ = NULL;
     Fl_Multiline_Input *input_ = NULL;
-    Fl_Multiline_Input *response_ = NULL;
+    Fl_Help_View *response_ = NULL;
     Fl_Choice *models_;
     std::unique_ptr<Button> btnDownload_;
+    std::unique_ptr<Button> btnModelConf_;
     std::unique_ptr<Button> btnSend_;
     MainMenu *menu_ = NULL;
 };

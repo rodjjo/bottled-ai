@@ -108,12 +108,12 @@ namespace bottled_ai
             };
         }
 
-        callback_t generate_text(const char *repo_id, const char *input, status_callback_t status_cb) {
-            enable_progress_window();
-            return [status_cb, repo_id, input]()
+        callback_t generate_text(const char *repo_id, const char *instruction, const char *input, status_callback_t status_cb) {
+            enable_progress_window(true);
+            return [status_cb, repo_id, instruction, input]()
             {
                 try {
-                    auto r = bottled_ai::py::getModule().attr("generate_text")(repo_id, input);
+                    auto r = bottled_ai::py::getModule().attr("generate_text")(repo_id, instruction, input);
                     auto response = r["response"].cast<std::string>();
                     status_cb(true, response.c_str()); // TODO: check error!
                 }

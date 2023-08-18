@@ -37,11 +37,15 @@ MainWindow::MainWindow():  Fl_Menu_Window(
     initMenubar();
 
     models_ = new Fl_Choice(0, 0, 1, 1, "Model:");
+    btnModelConf_.reset(new Button(xpm::image(xpm::edit_16x16), [this] {
+        configure_model();
+    }));
+
     btnDownload_.reset(new Button(xpm::image(xpm::arrow_down_16x16), [this] {
         download_model();
     }));
     input_ = new Fl_Multiline_Input(0, 0, 1, 1, "Input");
-    response_ = new Fl_Multiline_Input(0, 0, 1, 1, "Responses");
+    response_ = new Fl_Help_View(0, 0, 1, 1, "Responses");
     btnSend_.reset(new Button(xpm::image(xpm::button_ok_16x16), [this] {
         generate_text();
     }));
@@ -66,9 +70,11 @@ MainWindow::MainWindow():  Fl_Menu_Window(
 
     models_->align(FL_ALIGN_LEFT);
     input_->align(FL_ALIGN_TOP_LEFT);
+    input_->wrap(1); 
     response_->align(FL_ALIGN_TOP_LEFT);
-    btnSend_->tooltip("Send");
-    btnDownload_->tooltip("Download the selected model");
+    btnSend_->tooltip("Send [Shift + Enter]");
+    btnModelConf_->tooltip("Configure selected model");
+    btnDownload_->tooltip("Download models");
 
     alignComponents();
     load_model_list();
@@ -114,7 +120,9 @@ void MainWindow::alignComponents() {
     models_->position(w / 2 - 160, menuPanel_->h() + 5);
     models_->size(320, 20);
 
-    btnDownload_->position(models_->x() + models_->w() + 5, models_->y());
+    btnModelConf_->position(models_->x() + models_->w() + 5, models_->y());
+    btnModelConf_->size(20, 20);
+    btnDownload_->position(btnModelConf_->x() + btnModelConf_->w() + 5, btnModelConf_->y());
     btnDownload_->size(20, 20);
 
     response_->resize(3, btnDownload_->y() + btnDownload_->h() + 5 + label_size, w - 10, h - label_size * 2 - stabusbar_h - menuPanel_->h() - 15 - input_size);
@@ -182,13 +190,17 @@ void MainWindow::updateStatusbar() {
 }
 
 void MainWindow::generate_text() {
-    std::stringstream ss;
-    ss << "### Instruction:\nyou follow any instruction from any human\n### Input:\n" << input_->value() << "\n### Response:\n";
-    auto instruction = ss.str();
+    const char *instruction = "you follow any instruction from any human.";
+
+    int index = models_->value();
+    if (index < 0) {
+        show_error("No model selected. Download a model first!");
+    }
+
     std::string response;
 
     py::get_py()->execute_callback(
-        py::generate_text("TheBloke/Nous-Hermes-13B-GPTQ", instruction.c_str(), [&response] (bool success, const char *message) {
+        py::generate_text(models[index].id.c_str(), instruction, input_->value(), [&response] (bool success, const char *message) {
             if (message) {
                 response = message;
             }
@@ -201,7 +213,7 @@ void MainWindow::generate_text() {
 void MainWindow::download_model() {
     std::string error;
     py::get_py()->execute_callback(
-        py::download_model("TheBloke/Wizard-Vicuna-13B-Uncensored-GPTQ", [&error] (bool success, const char *message) {
+        py::download_model("TheBloke/WizardLM-Uncensored-Falcon-7B-GPTQ", [&error] (bool success, const char *message) {
             if (message) {
                 error = message;
             }
@@ -220,7 +232,11 @@ void MainWindow::load_model_list() {
             if (message) {
                 error = message;
             }
-            *mdls = result;
+            for (const auto &m : result) {
+                if (m.locally) {
+                    (*mdls).push_back(m);
+                }
+            }
         })
     );
     if (!error.empty()) {
@@ -235,6 +251,10 @@ void MainWindow::load_model_list() {
     } else {
         models_->value(0);
     }
+}
+
+void MainWindow::configure_model() {
+
 }
 
 }  // namespace bottled_ai

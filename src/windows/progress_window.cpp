@@ -12,8 +12,10 @@ namespace bottled_ai
 namespace {
     bool progress_enabled = false;
     bool progress_canceled = false;
+    bool textStream_enabled = false;
     std::unique_ptr<ProgressWindow> prog_win;
     std::string progress_label;
+    std::string progress_text;
 
     std::mutex mtx_progress;
     float current_progress = 0;
@@ -21,10 +23,12 @@ namespace {
 }
 
 ProgressWindow::ProgressWindow() {
-    window_ = new ModalWindow(0, 0, 640, 90, "Please wait");
+    window_ = new ModalWindow(0, 0, 640 ,  textStream_enabled ? 310 : 90, "Please wait");
     window_->begin();
     title_ = new Fl_Box(5, window_->h() - 85 + 3, window_->w() - 10, 20, "Wait");
     progress_ = new Fl_Progress(5, title_->y() + title_->h() + 3, window_->w() - 10, 15);
+    preview_ = new Fl_Multiline_Output(5, 5, window_->w() - 10, 200);
+
     btnCancel_.reset(new Button(xpm::image(xpm::button_cancel_16x16), [this] {
         progress_canceled = true;
         btnCancel_->enabled(false);
@@ -35,6 +39,14 @@ ProgressWindow::ProgressWindow() {
 
     progress_->maximum(100);
     progress_->value(0);
+
+    //preview_->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+    preview_->wrap(1); 
+    if (textStream_enabled) {
+        progress_->hide();
+    } else {
+        preview_->hide();
+    }
 
     btnCancel_->tooltip("Cancel the operation");
     btnCancel_->position(window_->w() / 2 - 50, window_->h() - 40);
@@ -71,12 +83,26 @@ void ProgressWindow::update() {
         title_->copy_label(progress_label.c_str());
         progress_label.clear();
     }
+
+    if (textStream_enabled && !progress_text.empty()) {
+        std::string current = preview_->value();
+        current += progress_text;
+        preview_->value(current.c_str());
+        preview_->position(preview_->size());
+        progress_text.clear();
+    }
 }
 
 void set_progress_title(const char *title) {
     std::unique_lock<std::mutex> lk(mtx_progress);
     if (title)
         progress_label = title;
+}
+
+void set_progress_text(const char *text) {
+    std::unique_lock<std::mutex> lk(mtx_progress);
+    if (text) 
+        progress_text += text;
 }
 
 void set_progress(size_t progress, size_t max) {
@@ -92,9 +118,11 @@ bool should_cancel_progress() {
     return progress_canceled;
 }
 
-void enable_progress_window() {
+void enable_progress_window(bool textStream) {
     progress_enabled = true;
     progress_canceled = false;
+    textStream_enabled = textStream;
+    progress_text.clear();
  }
 
 void show_progress_window() {
@@ -102,6 +130,7 @@ void show_progress_window() {
         return;
     if (!progress_enabled)
         return;
+    progress_text.clear();
     current_progress = 0;
     max_progress = 100;
     prog_win.reset(new ProgressWindow());

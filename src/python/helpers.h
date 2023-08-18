@@ -36,7 +36,7 @@ callback_t check_have_deps(status_callback_t status_cb);
 callback_t install_deps(status_callback_t status_cb);
 callback_t list_models(model_callback_t status_cb);
 callback_t download_model(const char *repo_id, status_callback_t status_cb);
-callback_t generate_text(const char *repo_id, const char *input, status_callback_t status_cb);
+callback_t generate_text(const char *repo_id, const char *instruction, const char *input, status_callback_t status_cb);
 
 
 }  // namespace py

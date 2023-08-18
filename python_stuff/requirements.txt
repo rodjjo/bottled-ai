@@ -9,6 +9,7 @@ safetensors==0.3.1
 GitPython==3.1.31
 pytorch_lightning==2.0.2
 torchdiffeq==0.2.3
+einops
 tdqm
 pynvml==11.5.0
 # ctransformers

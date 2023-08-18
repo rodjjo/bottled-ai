@@ -33,7 +33,8 @@ def have_dependencies():
         'omegaconf',
         'accelerate',
         'safetensors',
-        'future'
+        'future',
+        'einops'
     ]
     for l in lib_names:
         if not os.path.exists(os.path.join(lib_dir, l)):

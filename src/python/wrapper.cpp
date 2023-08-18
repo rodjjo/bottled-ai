@@ -34,6 +34,10 @@ PYBIND11_EMBEDDED_MODULE(bottled_ai, m) {
         bottled_ai::set_progress_title(text);
     });
 
+    m.def("progress_text", [](const char *text) {
+        bottled_ai::set_progress_text(text);
+    });
+
     m.def("progress_canceled", []() {
         if (bottled_ai::should_cancel_progress())
             return true;
