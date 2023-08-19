@@ -132,9 +132,7 @@ void DownloaderWindow::loadModels() {
                 error = message;
             }
             for (const auto &m : result) {
-                if (m.locally) {
-                    models.push_back(m);
-                }
+                models.push_back(m);
             }
         })
     );

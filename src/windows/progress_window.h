@@ -39,7 +39,7 @@ void set_progress_title(const char *title);
 void set_progress_text(const char *text);
 void set_progress(size_t progress, size_t max);
 bool should_cancel_progress();
-void enable_progress_window(bool textStream=false);
+void enable_progress_window(bool textStream=false, bool can_cancel=true);
 void show_progress_window();
 void hide_progress_window();
 

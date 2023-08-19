@@ -57,21 +57,6 @@ MODEL_LIST = [{
         'response_after':'### Response:\n',
         'templates': []
     },
-    # {
-    #     'id': 'TheBloke/EverythingLM-13B-16K-GPTQ',
-    #     'name': 'EverythingLM-13B-16K-GPTQ',
-    #     'model_basename': 'gptq_model-4bit-128g',
-    #     'dirname': os.path.join(CACHE_DIR, 'models--TheBloke--EverythingLM-13B-16K-GPTQ'),
-    #     'loader': 'auto_gpt',
-    #     'locally': False, 
-    #     'description': (
-    #        ''
-    #     ),
-    #     'response_after': 'ASSISTANT: ',
-    #     'templates': [
-    #         '{instruction}>\n\nUSER: {input}\nASSISTANT:'
-    #     ]
-    # }, 
     {
         'id': 'TheBloke/WizardLM-7B-uncensored-GPTQ',
         'name': 'WizardLM-7B-uncensored-GPTQ',
@@ -107,22 +92,38 @@ MODEL_LIST = [{
             '### Instruction:\n{input}\n### Response:\n',
         ]
     },
-    # {
-    #     'id': 'TheBloke/WizardLM-Uncensored-Falcon-7B-GPTQ',
-    #     'name': 'WizardLM-Uncensored-Falcon-7B-GPTQ',
-    #     'model_basename': 'gptq_model-4bit-64g',
-    #     'dirname': os.path.join(CACHE_DIR, 'models--TheBloke--WizardLM-Uncensored-Falcon-7B-GPTQ'),
-    #     'loader': 'auto_gpt',
-    #     'locally': False, 
-    #     'tokenizerModel': False,
-    #     'description': (
-    #        ''
-    #     ),
-    #     'response_after': '### Response:\n',
-    #     'templates': [
-    #         '{input}\n### Response:\n',
-    #     ]
-    # },
+    {
+        'id': 'TheBloke/StableBeluga-7B-GPTQ',
+        'name': 'StableBeluga-7B-GPTQ',
+        'model_basename': 'gptq_model-4bit-128g',
+        'dirname': os.path.join(CACHE_DIR, 'models--TheBloke--StableBeluga-7B-GPTQ'),
+        'loader': 'auto_gpt',
+        'locally': False, 
+        'description': (
+           'Stable Beluga 7B is a Llama2 7B model finetuned on an Orca style Dataset'
+        ),
+        'response_after': '### Response:\n',
+        'templates': [
+            '### System:\n{instruction}\n### User:\n{input}\n### Response:\n',
+            '### User:\n{input}\n### Response:\n',
+        ]
+    },
+    {
+        'id': 'TheBloke/stablecode-instruct-alpha-3b-GPTQ',
+        'name': 'stablecode-instruct-alpha-3b-GPTQ',
+        'model_basename': 'gptq_model-4bit-128g',
+        'dirname': os.path.join(CACHE_DIR, 'models--TheBloke--stablecode-instruct-alpha-3b-GPTQ'),
+        'loader': 'auto_gpt',
+        'locally': False, 
+        'have_tokenizer_model': False,
+        'description': (
+           'The model is intended to follow instruction to generate code. The dataset used to train the model is formatted in Alpaca format.'
+        ),
+        'response_after': '### Response:\n',
+        'templates': [
+            '### Instruction:\n{input}\n### Response:\n'
+        ]
+    }
 ]
 
 MODELS_MAP = {
@@ -131,7 +132,49 @@ MODELS_MAP = {
 
 def list_models() -> List[dict]:
     for element in MODEL_LIST:
-        element['locally'] = os.path.exists(
-            element['dirname']
+        element['locally'] = have_local_model(
+            element['id']
         )
     return MODEL_LIST
+
+
+def get_models_file(repo_id) -> List[str]:
+    mdl = MODELS_MAP[repo_id]
+    basedir = os.path.join(mdl['dirname'], 'snapshots') 
+    if not os.path.exists(basedir):
+        contents = []
+    else:
+        contents = os.listdir(basedir)
+    for d in contents:
+        if len(d) != 40:
+            continue
+        p = os.path.join(basedir, d)
+        if os.path.isdir(p):
+            basedir = p
+            break
+    if mdl.get('have_tokenizer_model', True):
+        params = [
+            os.path.join(basedir, 'tokenizer.model'),
+        ]
+    else:
+        params = [
+        ]
+    return [
+        os.path.join(basedir, f'{mdl["model_basename"]}.safetensors'),
+        os.path.join(basedir, 'config.json'),
+        os.path.join(basedir, 'quantize_config.json'),
+        os.path.join(basedir, 'tokenizer.json'),
+        os.path.join(basedir, 'tokenizer_config.json'),
+        os.path.join(basedir, 'special_tokens_map.json'),
+        # os.path.join(basedir, 'added_tokens.json'),
+    ] + params
+
+
+def have_local_model(repo_id) -> bool:
+    files = get_models_file(repo_id)
+    if len(files) < 1:
+        return False
+    for f in files:
+        if not os.path.exists(f):
+            return False
+    return True

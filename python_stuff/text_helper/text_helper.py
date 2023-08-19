@@ -15,8 +15,8 @@ def convert2html(text: str) -> str:
     result = result.replace('\n', f'</p>{paragraphy}')
     result = result.replace('<p>', f'<p>{font}')
     result = result.replace('</p>', '</font></p>\n')
-    result = result.replace('&apos;', "'");
-    # result = result.replace('\n', '<br>')
-    #with open('test.html', 'w') as fp:
-    #    fp.write(result)
+    result = result.replace('&apos;', "'")
+    result = result.replace('&quot;', "\"")
+    while (' ' * 2) in result:
+        result = result.replace(' ' * 2,' &nbsp;')
     return result

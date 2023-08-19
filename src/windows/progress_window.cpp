@@ -11,6 +11,7 @@ namespace bottled_ai
 {
 namespace {
     bool progress_enabled = false;
+    bool cancelable = true;
     bool progress_canceled = false;
     bool textStream_enabled = false;
     std::unique_ptr<ProgressWindow> prog_win;
@@ -51,6 +52,9 @@ ProgressWindow::ProgressWindow() {
     btnCancel_->tooltip("Cancel the operation");
     btnCancel_->position(window_->w() / 2 - 50, window_->h() - 40);
     btnCancel_->size(100, 30);
+    if (!cancelable) {
+        btnCancel_->hide();
+    }
 
     Fl::add_timeout(0.01, &ProgressWindow::update, this);
 }
@@ -118,9 +122,10 @@ bool should_cancel_progress() {
     return progress_canceled;
 }
 
-void enable_progress_window(bool textStream) {
+void enable_progress_window(bool textStream, bool can_cancel) {
     progress_enabled = true;
     progress_canceled = false;
+    cancelable = can_cancel;
     textStream_enabled = textStream;
     progress_text.clear();
  }

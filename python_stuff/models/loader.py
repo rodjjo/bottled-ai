@@ -5,7 +5,7 @@ import torch
 from transformers import AutoTokenizer
 from auto_gptq import AutoGPTQForCausalLM
 from models.paths import CACHE_DIR
-from models.listing import MODELS_MAP
+from models.listing import MODELS_MAP, get_models_file, have_local_model
 
 SELECTED_MODEL = None
 MAX_MEMORY = None
@@ -18,42 +18,6 @@ def set_max_memory(gpu, cpu):
             0: f"{gpu/ 1024.0}GiB",
             'cpu': f"{cpu / 1024.0}GiB"
         }
-
-def get_models_file(repo_id) -> List[str]:
-    mdl = MODELS_MAP[repo_id]
-    basedir = os.path.join(mdl['dirname'], 'snapshots') 
-    if not os.path.exists(basedir):
-        contents = []
-    else:
-        contents = os.listdir(basedir)
-    for d in contents:
-        if len(d) != 40:
-            continue
-        p = os.path.join(basedir, d)
-        if os.path.isdir(p):
-            basedir = p
-            break
-    params = [
-        os.path.join(basedir, 'tokenizer.model'),
-    ]
-    return [
-        os.path.join(basedir, f'{mdl["model_basename"]}.safetensors'),
-        os.path.join(basedir, 'config.json'),
-        os.path.join(basedir, 'quantize_config.json'),
-        os.path.join(basedir, 'tokenizer.json'),
-        os.path.join(basedir, 'tokenizer_config.json'),
-        os.path.join(basedir, 'special_tokens_map.json'),
-        # os.path.join(basedir, 'added_tokens.json'),
-    ] + params
-
-def have_local_model(repo_id) -> bool:
-    files = get_models_file(repo_id)
-    if len(files) < 1:
-        return False
-    for f in files:
-        if not os.path.exists(f):
-            return False
-    return True
 
 def get_model(repo_id: str) -> Tuple[AutoGPTQForCausalLM, AutoTokenizer]:
     select_model(repo_id)

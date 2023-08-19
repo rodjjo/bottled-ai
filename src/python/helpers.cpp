@@ -83,7 +83,6 @@ namespace bottled_ai
                         model.description = it["description"].cast<std::string>();
                         model.loader = it["loader"].cast<std::string>();
                         model.locally = it["locally"].cast<bool>();
-                        // model.templates = it["templates"].cast<std::vector<std::string> >();
                         models.push_back(model);
                     }
                     status_cb(true, NULL, models);  
@@ -95,7 +94,7 @@ namespace bottled_ai
         }
 
         callback_t download_model(const char *repo_id, status_callback_t status_cb) {
-            enable_progress_window();
+            enable_progress_window(false, false);
             return [status_cb, repo_id]()
             {
                 try {

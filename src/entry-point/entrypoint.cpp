@@ -33,7 +33,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
     */
     AllocConsole();
     ShowWindow(GetConsoleWindow(), SW_HIDE);
-    std::wstring where = executableDir() + L"/diffusion-exp.exe";
+    std::wstring where = executableDir() + L"/bottled-ai.exe";
     PROCESS_INFORMATION info;
     STARTUPINFOW si;
     ZeroMemory( &si, sizeof(si) );

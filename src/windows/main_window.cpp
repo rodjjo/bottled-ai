@@ -222,14 +222,16 @@ void MainWindow::load_model_list() {
         show_error(error.c_str());
         return;
     }
+    auto  index = models_->value();
     models_->clear();
     for (size_t i = 0; i < models.size(); ++i) {
         models_->add(models[i].name.c_str());
     }
-    if (models.size() < 1) {
-        show_error("No models to list");
-    } else {
-        models_->value(0);
+    if (index >= models.size()) {
+        index = 0;
+    }
+    if (models.size() > 0) {
+        models_->value(index);
     }
 }
 

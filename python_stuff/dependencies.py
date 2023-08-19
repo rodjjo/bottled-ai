@@ -11,10 +11,6 @@ def install_local_dependencies():
     subprocess.check_call([
         sys.executable, '-m', 'pip', 'install', os.path.join(basedir, 'python-future')
     ])
-    subprocess.check_call([
-        sys.executable, '-m', 'pip', 'install', os.path.join(basedir, 'filterpy')
-    ])
-
 
 def have_pip():
     try:
