@@ -8,6 +8,16 @@ from models.paths import CACHE_DIR
 from models.listing import MODELS_MAP
 
 SELECTED_MODEL = None
+MAX_MEMORY = None
+
+def set_max_memory(gpu, cpu):
+    global MAX_MEMORY
+    MAX_MEMORY = None
+    if gpu > 100 and cpu > 100:
+        MAX_MEMORY = {
+            0: f"{gpu/ 1024.0}GiB",
+            'cpu': f"{cpu / 1024.0}GiB"
+        }
 
 def get_models_file(repo_id) -> List[str]:
     mdl = MODELS_MAP[repo_id]
@@ -68,6 +78,8 @@ def select_model(repo_id: str) -> bool:
         local_files_only=True,
         trust_remote_code=True
     )
+    if MAX_MEMORY:
+        params['max_memory'] = MAX_MEMORY
     model = AutoGPTQForCausalLM.from_quantized(
         repo_id, 
         **params

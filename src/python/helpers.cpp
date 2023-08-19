@@ -107,18 +107,25 @@ namespace bottled_ai
                 }
             };
         }
-
+        
         callback_t generate_text(
             const char *repo_id, 
-            const char *instruction, 
             const char *input, 
-            int max_new_tokens,
-            float temperature,
-            float top_p,
-            float top_k,
-            float repetition_penalty,
             text_callback_t status_cb
         ) {
+            auto & c = getConfig();
+            model_config_t cfg = c.getModelConfig(repo_id);
+            int mem_gpu = -1, mem_cpu = -1;
+            c.getMaxMemory(mem_gpu, mem_cpu);
+
+            std::string instruction = cfg.context;
+            int max_new_tokens = cfg.max_new_tokens;
+            float temperature = cfg.temperature;
+            float top_p = cfg.top_p;
+            float top_k = cfg.top_k;
+            float repetition_penalty = cfg.repetition_penalty;
+
+
             enable_progress_window(true);
             return [
                 status_cb, 
@@ -129,7 +136,9 @@ namespace bottled_ai
                 temperature,
                 top_p,
                 top_k,
-                repetition_penalty
+                repetition_penalty,
+                mem_gpu,
+                mem_cpu
             ]()
             {
                 try {
@@ -141,6 +150,8 @@ namespace bottled_ai
                     params["top_p"] = top_p;
                     params["top_k"] = top_k;
                     params["repetition_penalty"] = repetition_penalty;
+                    params["mem_gpu"] = mem_gpu;
+                    params["mem_cpu"] = mem_cpu;
                     auto r = bottled_ai::py::getModule().attr("generate_text")(repo_id, params);
                     auto html = r["html"].cast<std::string>();
                     auto raw = r["raw"].cast<std::string>();

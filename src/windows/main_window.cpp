@@ -4,6 +4,7 @@
 #endif
 #include "src/windows/console_viewer.h"
 #include "src/windows/config_window.h"
+#include "src/windows/model_config.h"
 #include "src/dialogs/common_dialogs.h"
 #include "src/dialogs/size_dialog.h"
 #include "src/python/helpers.h"
@@ -239,6 +240,12 @@ void MainWindow::load_model_list() {
 }
 
 void MainWindow::configure_model() {
+    int mdl_index = models_->value();
+    if (mdl_index < 0) {
+        show_error("No model selected. Download a model first!");
+        return;
+    }
+    configure_model_params(models[mdl_index].id);
 }
 
 const char *MainWindow::link_clicked_cb(Fl_Widget *w, const char *uri) {

@@ -27,7 +27,7 @@ ProgressWindow::ProgressWindow() {
     window_->begin();
     title_ = new Fl_Box(5, window_->h() - 85 + 3, window_->w() - 10, 20, "Wait");
     progress_ = new Fl_Progress(5, title_->y() + title_->h() + 3, window_->w() - 10, 15);
-    preview_ = new Fl_Multiline_Output(5, 5, window_->w() - 10, 200);
+    preview_ = new Fl_Multiline_Output(5, 5, window_->w() - 10, 210);
 
     btnCancel_.reset(new Button(xpm::image(xpm::button_cancel_16x16), [this] {
         progress_canceled = true;

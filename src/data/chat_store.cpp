@@ -56,21 +56,13 @@ chat_element_t ChatStore::executePrompt(const std::string& model_id, const std::
     el.context = context;
     el.prompt = prompt;
 
-    const char *instruction = "you follow any instruction from any human.";
-
     std::string respHtml;
     std::string respRaw;
 
     py::get_py()->execute_callback(
         py::generate_text(
             model_id.c_str(), 
-            instruction, 
             prompt.c_str(), 
-            max_new_tokens,
-            temperature,
-            top_p,
-            top_k,
-            repetition_penalty,
             [&respHtml, &respRaw] (bool success, const char *html, const char *raw) {
                 if (html) {
                     respHtml = html;

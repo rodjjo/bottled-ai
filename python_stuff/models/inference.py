@@ -4,7 +4,7 @@ import random
 from datetime import datetime
 import transformers
 
-from models.loader import get_model
+from models.loader import get_model, set_max_memory
 from models.listing import MODELS_MAP
 from text_helper.text_helper import convert2html
 
@@ -81,6 +81,7 @@ def generate_text(model_id: str, params: dict) -> dict:
     top_p = params.get('top_p', 1)
     top_k = params.get('top_k', 0)
     repetition_penalty = params.get('repetition_penalty', 1)
+    set_max_memory(params.get('mem_gpu', -1), params.get('mem_cpu', -1))
 
     progress_title("Loading the model")
     progress(0, 100)

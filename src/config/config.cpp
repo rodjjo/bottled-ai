@@ -143,7 +143,21 @@ bool Config::save() {
         json sd;
         sd["add_model_dir"] = additionalModelDir_;
         sd["add_lora_dir"] = additionalLoraDir_;
+        sd["max_mem_gpu"] = max_memory_gpu_;
+        sd["max_mem_cpu"] = max_memory_cpu_;
         data["autogpt"] = sd;
+        json models;
+        for (auto it = model_configs_.begin(); it != model_configs_.end(); it++) {
+            json data;
+            data["max_new_tokens"] = it->second.max_new_tokens;
+            data["temperature"] = it->second.temperature;
+            data["top_p"] = it->second.top_p;
+            data["top_k"] = it->second.top_k;
+            data["repetition_penalty"] = it->second.repetition_penalty;
+            data["context"] = it->second.context;
+            models[it->first] = data;
+        }
+        data["models"] = models;
         const std::wstring path = getConfigDir() + kCONFIG_FILE;
         std::ofstream f(path.c_str());
         f << std::setw(2) << data << std::endl;
@@ -172,6 +186,39 @@ bool Config::load() {
             if (sd.contains("add_lora_dir")) {
                 additionalLoraDir_ = sd["add_lora_dir"].get<std::string>();
             }
+            if (sd.contains("max_mem_gpu")) {
+                max_memory_gpu_ = sd["max_mem_gpu"].get<int>();
+            }
+            if (sd.contains("max_mem_cpu")) {
+                max_memory_cpu_ = sd["max_mem_cpu"].get<int>();
+            }
+        }
+        if (data.contains("models")) {
+            auto models = data["models"];
+            for (auto& el : models.items()) {
+                auto k = el.key();
+                auto v = el.value();
+                model_config_t c;
+                if (v.contains("max_new_tokens")) {
+                    c.max_new_tokens = v["max_new_tokens"].get<int>();
+                }
+                if (v.contains("temperature")) {
+                    c.temperature = v["temperature"].get<float>();
+                }
+                if (v.contains("top_p")) {
+                    c.top_p = v["top_p"].get<float>();
+                }
+                if (v.contains("top_k")) {
+                    c.top_k = v["top_k"].get<float>();
+                }
+                if (v.contains("repetition_penalty")) {
+                    c.repetition_penalty = v["repetition_penalty"].get<float>();
+                }
+                if (v.contains("context")) {
+                    c.context = v["context"].get<std::string>();
+                }
+                model_configs_[k] = c;
+            }
         }
         return true;
     } catch(json::exception& e) {
@@ -179,6 +226,29 @@ bool Config::load() {
     }
 
     return false;
+}
+
+model_config_t Config::getModelConfig(const std::string& model_id) {
+    auto it = model_configs_.find(model_id);
+    if (it != model_configs_.end()) {
+        return it->second;
+    }
+    model_config_t r;
+    return r;
+}
+
+void Config::setModelConfig(const std::string& model_id, const model_config_t& config) {
+    model_configs_[model_id] = config;
+}
+
+void Config::setMaxMemory(int gpu, int cpu) {
+    max_memory_cpu_ = cpu;
+    max_memory_gpu_ = gpu;
+}
+
+void Config::getMaxMemory(int &gpu, int &cpu) {
+    cpu = max_memory_cpu_;
+    gpu = max_memory_gpu_;
 }
 
 

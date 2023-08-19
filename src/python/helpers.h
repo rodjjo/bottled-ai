@@ -39,13 +39,7 @@ callback_t list_models(model_callback_t status_cb);
 callback_t download_model(const char *repo_id, status_callback_t status_cb);
 callback_t generate_text(
     const char *repo_id, 
-    const char *instruction, 
     const char *input, 
-    int max_new_tokens,
-    float temperature,
-    float top_p,
-    float top_k,
-    float repetition_penalty,
     text_callback_t status_cb);
 
 }  // namespace py
