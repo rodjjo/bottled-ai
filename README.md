@@ -1,6 +1,8 @@
 # bottled-ai
 Storyteller
 
+
+
 ## Description
 
 This is a chatbot that runs locally using your GPU. 
@@ -12,6 +14,18 @@ It supports several models, and more models are going to be added soon.
 
 *Model downloader*   
 ![Ubuntu screenshot](https://github.com/rodjjo/bottled-ai/raw/main/docs/images/preview2.jpg)
+
+## Installation
+
+
+Platforms:
+* Windows - There is an installer here: [Latest Release (windows)](https://github.com/rodjjo/bottled-ai/releases/download/v0.1.0/Bottled-AI-Setup.exe)
+* Linux - Work In Progress
+* Mac - Future (Maybe)
+
+**Note**: Do not install inside `Program files` or other directory that requires admin access to write. The program download models inside its directory.
+
+[Other Release](https://github.com/rodjjo/bottled-ai/releases)
 
 ## Build and run 
 
