@@ -5,6 +5,7 @@
 #include "src/windows/console_viewer.h"
 #include "src/windows/config_window.h"
 #include "src/windows/model_config.h"
+#include "src/windows/downloader.h"
 #include "src/dialogs/common_dialogs.h"
 #include "src/dialogs/size_dialog.h"
 #include "src/python/helpers.h"
@@ -65,7 +66,7 @@ MainWindow::MainWindow():  Fl_Menu_Window(
     }));
     input_ = new Fl_Multiline_Input(0, 0, 1, 1, "Type your prompt (Cltrl+G to send):");
     response_ = new Fl_Help_View(0, 0, 1, 1);
-    response_->user_data (this);
+    response_->user_data(this);
     response_->link(link_clicked_cb);
 
     btnSend_.reset(new Button(xpm::image(xpm::button_ok_16x16), [this] {
@@ -197,21 +198,13 @@ void MainWindow::generate_text() {
 }
 
 void MainWindow::download_model() {
-    std::string error;
-    py::get_py()->execute_callback(
-        py::download_model("TheBloke/WizardLM-Uncensored-Falcon-7B-GPTQ", [&error] (bool success, const char *message) {
-            if (message) {
-                error = message;
-            }
-        })
-    );
-    if (!error.empty()) {
-        show_error(error.c_str());
-    }
+    show_downloader_window();
+    load_model_list();
 }
 
 void MainWindow::load_model_list() {
     std::string error;
+    models.clear();
     auto *mdls = &models;
     py::get_py()->execute_callback(
         py::list_models([&mdls, &error](bool success, const char *message, const model_list_t &result) {
@@ -229,6 +222,7 @@ void MainWindow::load_model_list() {
         show_error(error.c_str());
         return;
     }
+    models_->clear();
     for (size_t i = 0; i < models.size(); ++i) {
         models_->add(models[i].name.c_str());
     }

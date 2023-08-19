@@ -1,5 +1,4 @@
-#ifndef SRC_WINDOWS_MODAL_WINDOW_H
-#define SRC_WINDOWS_MODAL_WINDOW_H
+#pragma once
 
 #include <FL/Fl.H>
 #include <FL/Fl_Window.H>
@@ -20,5 +19,3 @@ class ModalWindow : public Fl_Window {
 };
 
 }  // namespace bottled_ai
-
-#endif  // SRC_WINDOWS_MODAL_WINDOW_H

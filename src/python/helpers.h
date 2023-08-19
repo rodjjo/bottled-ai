@@ -37,12 +37,16 @@ callback_t check_have_deps(status_callback_t status_cb);
 callback_t install_deps(status_callback_t status_cb);
 callback_t list_models(model_callback_t status_cb);
 callback_t download_model(const char *repo_id, status_callback_t status_cb);
+callback_t remove_model(const char *repo_id, status_callback_t status_cb);
 callback_t generate_text(
     const char *repo_id, 
     const char *input, 
     text_callback_t status_cb);
 
 }  // namespace py
+
+std::string escape_html(const std::string& data);
+
 }  // namespace
 
 #endif  // SRC_PYTHON_HELPERS_H_

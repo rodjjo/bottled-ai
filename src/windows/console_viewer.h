@@ -1,8 +1,7 @@
 /*
  * Copyright (C) 2023 by Rodrigo Antonio de Araujo
  */
-#ifndef SRC_WINDOWS_CONSOLE_VIEWER_H_
-#define SRC_WINDOWS_CONSOLE_VIEWER_H_
+#pragma once
 
 #include <string>
 #include <functional>
@@ -45,6 +44,3 @@ void showConsoles(const char* title, bool first_stdout);
 void runPyShowConsole(const char* title, callback_t callback, status_callback_t status_cb);
 
 } // namespace bottled_ai
-
-
-#endif  // SRC_WINDOWS_CONSOLE_VIEWER_H_

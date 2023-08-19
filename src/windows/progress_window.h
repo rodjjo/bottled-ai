@@ -1,5 +1,4 @@
-#ifndef SRC_WINDOWS_PROGRESS_WINDOW_H_
-#define SRC_WINDOWS_PROGRESS_WINDOW_H_
+#pragma once
 
 #include <string>
 #include <functional>
@@ -46,5 +45,3 @@ void hide_progress_window();
 
 } // namespace bottled_ai
 
-
-#endif  // SRC_WINDOWS_PROGRESS_WINDOW_H_

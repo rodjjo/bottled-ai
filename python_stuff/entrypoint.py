@@ -24,7 +24,7 @@ try:
     # setattr(tqdm_module, 'tqdm', new_tqdm)
     
     from models.listing import list_models  # no-qa
-    from models.downloader import download_model # no-qa
+    from models.downloader import download_model, remove_model # no-qa
     from models.inference import generate_text  # no-qa
     from text_helper.text_helper import convert2html
 

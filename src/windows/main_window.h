@@ -1,8 +1,7 @@
 /*
  * Copyright (C) 2023 by Rodrigo Antonio de Araujo
  */
-#ifndef SRC_WINDOWS_MAIN_WINDOW_H_
-#define SRC_WINDOWS_MAIN_WINDOW_H_
+#pragma once
 
 #include <memory>
 #include <FL/Fl.H>
@@ -64,5 +63,3 @@ class MainWindow : Fl_Menu_Window {
 
 
 } // namespace bottled_ai
-
-#endif  // SRC_WINDOWS_MAIN_WINDOW_H_

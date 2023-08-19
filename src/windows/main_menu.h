@@ -1,8 +1,7 @@
 /*
  * Copyright (C) 2023 by Rodrigo Antonio de Araujo
  */
-#ifndef SRC_WINDOWS_MAIN_MENU_H_
-#define SRC_WINDOWS_MAIN_MENU_H_
+#pragma once
 
 #include <functional>
 #include <string>
@@ -53,5 +52,3 @@ class MainMenu: public Fl_Menu_Bar {
     
 }  // namespace bottled_ai
 
-
-#endif  // SRC_WINDOWS_MAIN_MENU_H_

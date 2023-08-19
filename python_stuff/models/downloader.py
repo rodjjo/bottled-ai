@@ -1,6 +1,6 @@
 import gc
 import os
-
+from shutil import rmtree
 from transformers.utils.hub import cached_file
 from models.paths import CACHE_DIR
 from models.loader import unload_model, have_local_model, get_models_file
@@ -21,3 +21,7 @@ def download_model(repo_id: str) -> bool:
         ) is None:
             return False
     return True
+
+def remove_model(repo_id: str) -> bool:
+    rmtree(MODELS_MAP['dirname'], ignore_errors=True)
+    return False

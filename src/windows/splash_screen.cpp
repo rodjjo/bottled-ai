@@ -5,7 +5,7 @@
 namespace bottled_ai
 {
     
-SplashScreen::SplashScreen() : Fl_Window(200, 80, "Diffusion Expert") {
+SplashScreen::SplashScreen() : Fl_Window(200, 80, "Bottled-AI") {
     this->begin();
     loading_label_ = new Fl_Box(0, 0, w(), h(), "Python is loading...");
     this->end();

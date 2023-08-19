@@ -1,8 +1,7 @@
 /*
  * Copyright (C) 2023 by Rodrigo Antonio de Araujo
  */
-#ifndef SRC_WINDOWS_CONFIG_WINDOW_H
-#define SRC_WINDOWS_CONFIG_WINDOW_H
+#pragma once
 
 #include <FL/Fl_Group.H>
 #include <FL/Fl_Tabs.H>
@@ -44,5 +43,3 @@ class ConfigWindow {
 void show_configuration();
 
 }   // namespace bottled_ai
-
-#endif  // SRC_WINDOWS_CONFIG_WINDOW_H

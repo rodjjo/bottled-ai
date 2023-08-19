@@ -107,6 +107,19 @@ namespace bottled_ai
                 }
             };
         }
+
+        callback_t remove_model(const char *repo_id, status_callback_t status_cb) {
+            return [status_cb, repo_id]()
+            {
+                try {
+                    bottled_ai::py::getModule().attr("remove_model")(repo_id);
+                    status_cb(true, NULL); 
+                }
+                catch(std::runtime_error e) {
+                    status_cb(false, getError(e)); 
+                }
+            };
+        }
         
         callback_t generate_text(
             const char *repo_id, 
@@ -164,4 +177,18 @@ namespace bottled_ai
         }
 
     } // namespace py
+
+    std::string escape_html(const std::string& data) {
+        std::string buffer;
+        buffer.reserve(data.size());
+        for(size_t pos = 0; pos != data.size(); ++pos) {
+            switch(data[pos]) {
+                case '&':  buffer.append("&amp;");       break;
+                case '<':  buffer.append("&lt;");        break;
+                case '>':  buffer.append("&gt;");        break;
+                default:   buffer.append(&data[pos], 1); break;
+            }
+        }
+        return buffer;
+    }
 } // namespace

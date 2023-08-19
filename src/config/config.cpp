@@ -174,7 +174,7 @@ bool Config::load() {
     std::ifstream f(path.c_str());
     try {
         if (!f.good()) {
-            fprintf(stderr, "Diffusion Expert's configuration file does not exist\n");
+            fprintf(stderr, "Bottled-AI's configuration file does not exist\n");
             return true;
         }
         json data = json::parse(f);
