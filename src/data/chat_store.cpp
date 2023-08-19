@@ -89,6 +89,7 @@ std::string ChatStore::toHtml() {
         ss << at(i).html;
         ss << "<CENTER><p>";
         ss << "<a href='/?a=copy-response-" << i << "'>[Copy Response]</a> ";
+        ss << "<a href='/?a=copy-prompt-" << i << "'>[Copy Prompt]</a> ";
         ss << "<a href='/?a=copy-" << i << "'>[Copy Both]</a> ";
         ss << "<a href='/?a=context-" << i << "'>[Context]</a> ";
         ss << "<a href='/?a=regenerate-" << i << "'>[Regenerate]</a> ";

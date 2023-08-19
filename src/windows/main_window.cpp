@@ -106,7 +106,7 @@ void MainWindow::initMenu() {
     menuPanel_->end();
     callback_t noCall = []{};
 
-    menu_->addItem([this] { clear_all(); }, "", "File/New", "", 0, xpm::file_new_16x16);
+    menu_->addItem([this] { clear_all(); }, "", "File/New", "^n", 0, xpm::file_new_16x16);
     // menu_->addItem([this] {  }, "", "File/Save", "^s", 0, xpm::save_16x16);
     menu_->addItem([this] { Fl::delete_widget(this); }, "", "File/Exit", "", 0, xpm::exit_16x16);
     menu_->addItem([this] { generate_text(); }, "", "Edit/Generate", "^g", 0, xpm::button_play);
@@ -252,6 +252,8 @@ const char *MainWindow::link_clicked_cb(const char *uri) {
     int index = -1;
     if (sscanf(uri, "/?a=copy-response-%d", &index) == 1) {
         copy_to_cb(chat_->at(index).raw);
+    } else if (sscanf(uri, "/?a=copy-prompt-%d", &index) == 1) {
+        copy_to_cb(chat_->at(index).prompt);
     } else if (sscanf(uri, "/?a=copy-%d", &index) == 1) {
         copy_to_cb(chat_->at(index).prompt + "\n\n" + chat_->at(index).raw);
     } else if (sscanf(uri, "/?a=context-%d", &index) == 1) {
