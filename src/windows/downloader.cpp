@@ -108,7 +108,7 @@ DownloaderWindow::~DownloaderWindow() {
 }
 
 void DownloaderWindow::alignComponents() {
-    tabs_->resize(0, 0, window_->w(), window_->h() - 50);
+    ((Fl_Group*) tabs_)->resize(0, 0, window_->w(), window_->h() - 50);
     page_availiable_->resize(tabs_->x(), tabs_->y() + 30, tabs_->w(), tabs_->h() - 22);
     page_have_->resize(tabs_->x(), tabs_->y() + 30, tabs_->w(), tabs_->h() - 22);
     int left = tabs_->x() + 10;

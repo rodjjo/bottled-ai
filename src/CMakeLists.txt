@@ -40,6 +40,8 @@ target_link_libraries(
     opengl32
     user32
     comctl32
+    Gdiplus
+    Ws2_32
 )
 
 set_target_properties(bottled-ai

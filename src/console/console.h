@@ -1,8 +1,4 @@
-/*
- * Copyright (C) 2023 by Rodrigo Antonio de Araujo
- */
-#ifndef SRC_CONSOLE_CONSOLE_H_
-#define SRC_CONSOLE_CONSOLE_H_
+#pragma once
 
 #include <memory>
 
@@ -43,4 +39,3 @@ class Console: public Fl_Widget {
 
 }  // namespace bottled_ai 
 
-#endif  // SRC_CONSOLE_CONSOLE_H_

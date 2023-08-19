@@ -1,8 +1,4 @@
-/*
- * Copyright (C) 2023 by Rodrigo Antonio de Araujo
- */
-#ifndef SRC_CONSOLE_CONSOLE_TABS_H_
-#define SRC_CONSOLE_CONSOLE_TABS_H_
+#pragma once
 
 #include <memory>
 
@@ -44,4 +40,3 @@ class ConsoleTabs : public Fl_Group {
     
 } // namespace bottled_ai
 
-#endif  // SRC_CONSOLE_CONSOLE_TABS_H_

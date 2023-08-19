@@ -1,8 +1,4 @@
-/*
- * Copyright (C) 2023 by Rodrigo Antonio de Araujo
- */
-#ifndef SRC_CONSOLE_EMULATED_TERMINAL_H_
-#define SRC_CONSOLE_EMULATED_TERMINAL_H_
+#pragma once
 
 #include <mutex>
 #include <thread>
@@ -92,5 +88,3 @@ class EmulatedTerminal {
 };
 
 }  // namespace bottled_ai 
-
-#endif  // SRC_CONSOLE_EMULATED_TERMINAL_H_

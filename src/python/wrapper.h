@@ -1,8 +1,4 @@
-/*
- * Copyright (C) 2023 by Rodrigo Antonio de Araujo
- */
-#ifndef SRC_PYTHON_WRAPPER_H_
-#define SRC_PYTHON_WRAPPER_H_
+#pragma once
 
 #include <functional>
 #include <mutex>
@@ -61,5 +57,3 @@ class PythonMachine {
 
 }  // namespace py
 }  // namespace bottled_ai
-
-#endif  // SRC_PYTHON_WRAPPER_H_

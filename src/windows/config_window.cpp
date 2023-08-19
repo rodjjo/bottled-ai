@@ -60,7 +60,7 @@ ConfigWindow::~ConfigWindow() {
 }
 
 void ConfigWindow::align_components() {
-    tabs_->resize(0, 0, window_->w(), window_->h() - 50);
+    ((Fl_Group*) tabs_)->resize(0, 0, window_->w(), window_->h() - 50);
     page_general_->resize(tabs_->x(), tabs_->y() + 30, tabs_->w(), tabs_->h() - 22);
     int left = tabs_->x() + 10;
     int top = tabs_->y() + 55;

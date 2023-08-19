@@ -92,7 +92,7 @@ void ProgressWindow::update() {
         std::string current = preview_->value();
         current += progress_text;
         preview_->value(current.c_str());
-        preview_->position(preview_->size());
+        preview_->insert_position(preview_->size());
         progress_text.clear();
     }
 }

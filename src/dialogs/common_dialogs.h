@@ -1,8 +1,4 @@
-/*
- * Copyright (C) 2023 by Rodrigo Antonio de Araujo
- */
-#ifndef SRC_DIALOGS_COMMON_DIALOGS_H_
-#define SRC_DIALOGS_COMMON_DIALOGS_H_
+#pragma once
 
 #include <string>
 
@@ -20,5 +16,3 @@ void show_error(const char *message);
 const char *ask_value(const char *message);
 
 }  // namespace bottled_ai
-
-#endif  // SRC_DIALOGS_COMMON_DIALOGS_H_

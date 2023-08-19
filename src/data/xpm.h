@@ -1,8 +1,4 @@
-/*
- * Copyright (C) 2023 by Rodrigo Antonio de Araujo
- */
-#ifndef SRC_DATA_XPM_H_
-#define SRC_DATA_XPM_H_
+#pragma once
 
 #include <memory>
 
@@ -91,5 +87,3 @@ std::shared_ptr<Fl_RGB_Image> image(xpm_t xpm_id,  Fl_Color bg=FL_GRAY);
 
 } // namespace xpm
 } // namespace bottled_ai
-
-#endif  // SRC_DATA_XPM_H_

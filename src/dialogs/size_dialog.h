@@ -1,5 +1,4 @@
-#ifndef SRC_DIALOG_SIZE_DIALOG_H
-#define SRC_DIALOG_SIZE_DIALOG_H
+#pragma once
 
 #include <memory>
 
@@ -50,5 +49,3 @@ bool getSizeFromDialog(const char *title, int *x, int *y);
     
 } // namespace bottled_ai
 
-
-#endif // SRC_DIALOG_SIZE_DIALOG_H

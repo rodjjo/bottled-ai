@@ -5,9 +5,10 @@
 #include <chrono>
 #include <thread>
 
-#ifdef _WIN32
+#ifdef WIN32
 #include <io.h>
 #include <fcntl.h>
+#include <Windows.h>
 #else
 #include <unistd.h>
 #endif
@@ -21,7 +22,7 @@
 #define HALF_LINES 256
 #define BUFFER_SIZE (LINE_SIZE * LINE_COUNT)
 
-#ifdef _WIN32
+#ifdef WIN32
 #define DUP _dup
 #define DUP2 _dup2
 #define CLOSE _close
@@ -1015,7 +1016,7 @@ namespace bottled_ai
             }
         }
         if (!contents.empty()) {
-#ifdef _WIN32
+#ifdef WIN32
         HGLOBAL hMem =  GlobalAlloc(GMEM_MOVEABLE, contents.size());
         if (hMem != NULL) {
             memcpy(GlobalLock(hMem), &contents[0], contents.size());

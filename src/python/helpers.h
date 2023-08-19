@@ -1,8 +1,4 @@
-/*
- * Copyright (C) 2023 by Rodrigo Antonio de Araujo
- */
-#ifndef SRC_PYTHON_HELPERS_H_
-#define SRC_PYTHON_HELPERS_H_
+#pragma once
 
 #include <vector>
 #include <string>
@@ -49,4 +45,3 @@ std::string escape_html(const std::string& data);
 
 }  // namespace
 
-#endif  // SRC_PYTHON_HELPERS_H_

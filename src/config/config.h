@@ -1,8 +1,4 @@
-/*
- * Copyright (C) 2023 by Rodrigo Antonio de Araujo
- */
-#ifndef SRC_CONFIG_CONFIG_H_
-#define SRC_CONFIG_CONFIG_H_
+#pragma once
 
 #include <string>
 #include <map>
@@ -76,5 +72,3 @@ namespace bottled_ai
   Config &getConfig();
 
 } // namespace bottled_ai
-
-#endif

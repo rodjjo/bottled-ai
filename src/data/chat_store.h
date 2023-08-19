@@ -1,5 +1,4 @@
-#ifndef SRC_CHAT_STORE_H
-#define SRC_CHAT_STORE_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -44,5 +43,3 @@ class ChatStore {
 };
     
 } // namespace bottled_ai
-
-#endif  // SRC_CHAT_STORE_H

@@ -1,8 +1,4 @@
-/*
- * Copyright (C) 2018 by Rodrigo Antonio de Araujo
- */
-#ifndef SRC_CONTROLS_BUTTON_H_
-#define SRC_CONTROLS_BUTTON_H_
+#pragma once
 
 #include <memory>
 #include <functional>
@@ -55,5 +51,3 @@ class Button {
 };
 
 }  // namespace bottled_ai
-
-#endif  // SRC_CONTROLS_BUTTON_H_
