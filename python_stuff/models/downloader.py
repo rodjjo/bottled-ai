@@ -23,5 +23,5 @@ def download_model(repo_id: str) -> bool:
     return True
 
 def remove_model(repo_id: str) -> bool:
-    rmtree(MODELS_MAP['dirname'], ignore_errors=True)
+    rmtree(MODELS_MAP[repo_id]['dirname'], ignore_errors=True)
     return False

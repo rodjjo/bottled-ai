@@ -5,6 +5,7 @@
 
 #include "src/python/helpers.h"
 #include "src/python/wrapper.h"
+#include "src/python/utils.h"
 
 #include "src/windows/downloader.h"
 
@@ -19,13 +20,13 @@ std::string model2html(const py::model_t& model) {
     ss << "Model Name:";
     ss << "</b></font></p>";
     ss << "<p><font face=\"arial\" size=\"4\">";
-    ss << escape_html(model.name);
+    ss << convert2html(model.name);
     ss << "</font></p>";
     ss << "<p><font face=\"arial\" size=\"6\"><b>";
     ss << "Description:";
     ss << "</b></font></p>";
     ss << "<p><font face=\"arial\" size=\"4\">";
-    ss << escape_html(model.description);
+    ss << convert2html(model.description);
     ss << "</font></p>";
     ss << "<center>";
     if (model.locally) {
@@ -33,7 +34,7 @@ std::string model2html(const py::model_t& model) {
     } else {
         ss << "<a href=\"/?download-";
     }
-    ss << escape_html(model.id) << "\">";
+    ss << model.id << "\">";
     if (model.locally) {
         ss << "[REMOVE THIS MODEL]";
     } else {
@@ -174,7 +175,7 @@ void DownloaderWindow::link_clicked_cb(const char *uri, bool for_downloading) {
 }
 
 void DownloaderWindow::remove_model(const std::string& model_id) {
-    if (ask("Irreversible operation.\nDo you want to remove the model files?")) {
+    if (ask((model_id + "\nIrreversible operation.\nDo you want to remove the model files?").c_str())) {
         std::string error;
         py::get_py()->execute_callback(
             py::remove_model(model_id.c_str(), [&error] (bool success, const char *message) {

@@ -119,6 +119,26 @@ namespace bottled_ai
                 }
             };
         }
+
+        callback_t convert2html(
+            const char *text, 
+            status_callback_t status_cb
+        ) {
+            return [
+                status_cb, 
+                text
+            ]()
+            {
+                try {
+                    auto r = bottled_ai::py::getModule().attr("convert2html")(text);
+                    auto html = r.cast<std::string>();
+                    status_cb(true, html.c_str());
+                }
+                catch(std::runtime_error e) {
+                    status_cb(false, getError(e)); 
+                }
+            };
+        }
         
         callback_t generate_text(
             const char *repo_id, 
@@ -176,20 +196,4 @@ namespace bottled_ai
         }
 
     } // namespace py
-
-    std::string escape_html(const std::string& data) {
-        std::string buffer;
-        buffer.reserve(data.size());
-        for(size_t pos = 0; pos != data.size(); ++pos) {
-            switch(data[pos]) {
-                case '&':  buffer.append("&amp;");       break;
-                case '\n':  buffer.append("<br>");       break;
-                case ' ':  buffer.append("&nbsp;");       break;
-                case '<':  buffer.append("&lt;");        break;
-                case '>':  buffer.append("&gt;");        break;
-                default:   buffer.append(&data[pos], 1); break;
-            }
-        }
-        return buffer;
-    }
 } // namespace
