@@ -69,15 +69,22 @@ def convert2html(text: str) -> str:
         # break the line after the end of the sentence
         result = create_code(result)
 
-        result = markdown.markdown(result, output_format='html', extensions=['tables', 'sane_lists'])
+        result = markdown.markdown(result, output_format='html', extensions=['tables'])
         result = result.replace('<table>', '<table border=1 width=95%>')
         result = re.sub(r'(.*>)\n', r'\1', result)
 
         # create code block
         result = remove_code_blocks(result)
+        
+        lines = []
+        for l in result.split('\n\n'):
+            l = l.replace('\n', '\n\n')
+            lines.append(l)
+        result = '\n\n'.join(lines)
+
 
         # break the lines
-        result = re.sub(r'([^\n]+)([\n])([^\n]+)', r'\1\n\n\2', result)
+        # result = re.sub(r'([^\n]+)([\n])([^\n]+)', r'\1\n\n\2', result)
 
         # create paragraphys
         result = create_paragrapys(result)
