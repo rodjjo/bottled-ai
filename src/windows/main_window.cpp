@@ -86,6 +86,8 @@ MainWindow::MainWindow():  Fl_Menu_Window(
     btnModelConf_->tooltip("Configure selected model");
     btnDownload_->tooltip("Download models");
 
+    response_->textsize(12);
+
     alignComponents();
     load_model_list();
 }

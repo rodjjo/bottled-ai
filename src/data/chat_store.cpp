@@ -60,9 +60,8 @@ chat_element_t ChatStore::executePrompt(const std::string& model_id, const std::
         })
     );
    
-    std::string value = std::string("<p><font face=\"arial\" size=\"4\">") + bottled_ai::convert2html(prompt) + "</font></p>";
-    respHtml = std::string("<p>&nbsp;</p><font face=\"arial\" size=\"6\"><b>Assistant:</b></font>") + respHtml; 
-    respHtml = std::string("<p>&nbsp;</p><font face=\"arial\" size=\"6\"><b>User:</b></font>") + value + respHtml; 
+    respHtml = std::string("<p><font face=\"arial\" size=\"6\"><b>Assistant:</b></font></p>") + respHtml; 
+    respHtml = std::string("<p><font face=\"arial\" size=\"6\"><b>User:</b></font></p>") + bottled_ai::convert2html(prompt) + respHtml; 
     el.html = respHtml;
     el.raw = respRaw;
     return el;
