@@ -2,10 +2,9 @@
 Storyteller
 
 
-
 ## Description
 
-This is a chatbot that runs locally using your GPU. 
+This is a chatbot that runs locally using your GPU (GPTQ models) or CPU (GGML models). 
 It supports several models, and more models are going to be added soon.
 
 *Main window*   

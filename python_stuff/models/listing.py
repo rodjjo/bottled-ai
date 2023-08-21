@@ -129,13 +129,29 @@ MODEL_LIST = [{
         'locally': False, 
         'have_tokenizer_model': False,
         'description': (
-           'An OpenLLaMa-3B model model trained on explain tuned datasets, created using Instructions and Input from WizardLM, Alpaca & Dolly-V2 datasets and applying Orca Research Paper dataset construction approaches.'
+           'It runs using the CPU.\nAn OpenLLaMa-3B model model trained on explain tuned datasets, created using Instructions and Input from WizardLM, Alpaca & Dolly-V2 datasets and applying Orca Research Paper dataset construction approaches.'
         ),
         'response_after': '### Response:\n',
         'templates': [
             '### System:\n{instruction}\n### User:\n{input}\n### Response:\n',
         ]
-    }
+    }, {
+        'id': 'NousResearch/Nous-Hermes-Llama2-13b-GGML',
+        'name': 'Nous-Hermes-Llama2-13b-GGML',
+        'model_basename': 'ggml-Hermes-2-step2559-q4_K_M',
+        'dirname': os.path.join(CACHE_DIR, 'models--NousResearch--Nous-Hermes-Llama2-13b-GGML'),
+        'loader': 'ctransformers',
+        'model_type': 'llama',
+        'locally': False, 
+        'have_tokenizer_model': False,
+        'description': (
+           'It runs using the CPU.\nNous-Hermes-Llama2-13b is a state-of-the-art language model fine-tuned on over 300,000 instructions. This model was fine-tuned by Nous Research, with Teknium and Emozilla leading the fine tuning process and dataset curation, Redmond AI sponsoring the compute, and several other contributors.'
+        ),
+        'response_after': '### Response:\n',
+        'templates': [
+            '### Instruction:\n{instruction}\n### Input:\n{input}\n### Response:\n',
+        ]
+    },
 ]
 
 MODELS_MAP = {
