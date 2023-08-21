@@ -32,7 +32,8 @@ def have_dependencies():
         'future',
         'einops',
         'torch',
-        'markdown'
+        'markdown',
+        'ctransformers'
     ]
     for l in lib_names:
         if not os.path.exists(os.path.join(lib_dir, l)):

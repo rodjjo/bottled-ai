@@ -13,7 +13,7 @@ markdown==3.4.4
 einops==0.6.1
 pynvml==11.5.0
 # ctransformers
-# https://github.com/jllllll/ctransformers-cuBLAS-wheels/releases/download/AVX2/ctransformers-0.2.22+cu117-py3-none-any.whl
+https://github.com/jllllll/ctransformers-cuBLAS-wheels/releases/download/AVX2/ctransformers-0.2.22+cu117-py3-none-any.whl
 
 # auto-gptq
 https://github.com/PanQiWei/AutoGPTQ/releases/download/v0.4.1/auto_gptq-0.4.1+cu117-cp310-cp310-win_amd64.whl; platform_system == "Windows"

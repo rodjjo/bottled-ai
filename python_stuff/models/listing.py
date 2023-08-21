@@ -9,7 +9,7 @@ MODEL_LIST = [{
         'name': 'Nous-Hermes-13b (GPTQ)',
         'model_basename': 'nous-hermes-13b-GPTQ-4bit-128g.no-act.order',
         'dirname': os.path.join(CACHE_DIR, 'models--TheBloke--Nous-Hermes-13B-GPTQ'),
-        'loader': 'auto_gpt',
+        'loader': 'auto_gptq',
         'locally': False,
         'description': (
             'Nous-Hermes-13b is a state-of-the-art language model fine-tuned on over 300,000 instructions.'
@@ -22,14 +22,13 @@ MODEL_LIST = [{
         'response_after':'### Response:\n',
         'templates': [
             '### Instruction:\n{instruction}\n### Input:\n{input}\n### Response:\n',
-            '### Instruction:\n{input}\n### Response:\n',
         ]
     }, {
         'id': 'TheBloke/Wizard-Vicuna-13B-Uncensored-GPTQ',
         'name': 'Wizard-Vicuna-13B-Uncensored-GPTQ',
         'model_basename': 'Wizard-Vicuna-13B-Uncensored-GPTQ-4bit-128g.compat.no-act-order',
         'dirname': os.path.join(CACHE_DIR, 'models--TheBloke--Wizard-Vicuna-13B-Uncensored-GPTQ'),
-        'loader': 'auto_gpt',
+        'loader': 'auto_gptq',
         'locally': False, 
         'description': (
             'This is wizard-vicuna-13b trained with a subset of the dataset - responses that contained alignment / moralizing were removed.\n'
@@ -41,14 +40,13 @@ MODEL_LIST = [{
         'response_after':'### Response:\n',
         'templates': [
             '### Instruction:\n{instruction}>\n### Input:\n{input}>\n### Response:\n',
-            '### Instruction:\n{input}>\n### Response:\n',
         ]
     }, {
         'id': 'TheBloke/openchat_v2_w-GPTQ',
         'name': 'openchat_v2_w-GPT',
         'model_basename': 'openchat_v2_w-GPTQ-4bit-128g.no-act.order',
         'dirname': os.path.join(CACHE_DIR, 'models--TheBloke--openchat_v2_w-GPT'),
-        'loader': 'auto_gpt_openchat',
+        'loader': 'auto_gptq_openchat',
         'locally': False, 
         'description': (
             'The OpenChat v2 family is inspired by offline reinforcement learning, '
@@ -62,7 +60,7 @@ MODEL_LIST = [{
         'name': 'WizardLM-7B-uncensored-GPTQ',
         'model_basename': 'WizardLM-7B-uncensored-GPTQ-4bit-128g.compat.no-act-order',
         'dirname': os.path.join(CACHE_DIR, 'models--TheBloke--WizardLM-7B-uncensored-GPTQ'),
-        'loader': 'auto_gpt',
+        'loader': 'auto_gptq',
         'locally': False, 
         'description': (
            'This is WizardLM trained with a subset of the dataset - responses that contained alignment / moralizing were removed.\n' 
@@ -79,7 +77,7 @@ MODEL_LIST = [{
         'name': 'Nous-Hermes-Llama-2-7B-GPTQ',
         'model_basename': 'gptq_model-4bit-128g',
         'dirname': os.path.join(CACHE_DIR, 'models--TheBloke--Nous-Hermes-Llama-2-7B-GPTQ'),
-        'loader': 'auto_gpt',
+        'loader': 'auto_gptq',
         'locally': False, 
         'description': (
            'Nous-Hermes-Llama2-7b is a state-of-the-art language model fine-tuned on over 300,000 instructions.\n'
@@ -89,7 +87,6 @@ MODEL_LIST = [{
         'response_after': '### Response:\n',
         'templates': [
             '### Instruction:\n{instruction}\n### Input:\n{input}\n### Response:\n',
-            '### Instruction:\n{input}\n### Response:\n',
         ]
     },
     {
@@ -97,7 +94,7 @@ MODEL_LIST = [{
         'name': 'StableBeluga-7B-GPTQ',
         'model_basename': 'gptq_model-4bit-128g',
         'dirname': os.path.join(CACHE_DIR, 'models--TheBloke--StableBeluga-7B-GPTQ'),
-        'loader': 'auto_gpt',
+        'loader': 'auto_gptq',
         'locally': False, 
         'description': (
            'Stable Beluga 7B is a Llama2 7B model finetuned on an Orca style Dataset'
@@ -105,7 +102,6 @@ MODEL_LIST = [{
         'response_after': '### Response:\n',
         'templates': [
             '### System:\n{instruction}\n### User:\n{input}\n### Response:\n',
-            '### User:\n{input}\n### Response:\n',
         ]
     },
     {
@@ -113,7 +109,7 @@ MODEL_LIST = [{
         'name': 'stablecode-instruct-alpha-3b-GPTQ',
         'model_basename': 'gptq_model-4bit-128g',
         'dirname': os.path.join(CACHE_DIR, 'models--TheBloke--stablecode-instruct-alpha-3b-GPTQ'),
-        'loader': 'auto_gpt',
+        'loader': 'auto_gptq',
         'locally': False, 
         'have_tokenizer_model': False,
         'description': (
@@ -122,6 +118,22 @@ MODEL_LIST = [{
         'response_after': '### Response:\n',
         'templates': [
             '### Instruction:\n{input}\n### Response:\n'
+        ]
+    }, {
+        'id': 'TheBloke/orca_mini_3B-GGML',
+        'name': 'orca_mini_3B-GGML',
+        'model_basename': 'orca-mini-3b.ggmlv3.q8_0',
+        'dirname': os.path.join(CACHE_DIR, 'models--TheBloke--orca_mini_3B-GGML'),
+        'loader': 'ctransformers',
+        'model_type': 'llama',
+        'locally': False, 
+        'have_tokenizer_model': False,
+        'description': (
+           'An OpenLLaMa-3B model model trained on explain tuned datasets, created using Instructions and Input from WizardLM, Alpaca & Dolly-V2 datasets and applying Orca Research Paper dataset construction approaches.'
+        ),
+        'response_after': '### Response:\n',
+        'templates': [
+            '### System:\n{instruction}\n### User:\n{input}\n### Response:\n',
         ]
     }
 ]
@@ -152,6 +164,10 @@ def get_models_file(repo_id) -> List[str]:
         if os.path.isdir(p):
             basedir = p
             break
+    if mdl['loader'] == 'ctransformers':
+        return [
+            os.path.join(basedir, f'{mdl["model_basename"]}.bin'),
+        ]
     if mdl.get('have_tokenizer_model', True):
         params = [
             os.path.join(basedir, 'tokenizer.model'),

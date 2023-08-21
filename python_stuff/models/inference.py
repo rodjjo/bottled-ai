@@ -1,3 +1,5 @@
+import traceback
+
 import torch
 import gc
 import random
@@ -44,23 +46,6 @@ class CanceledChecker:
         return progress_canceled()
 
 
-def tokenize_single_input(tokenizer, prompt):
-    # OpenChat V2
-    human_prefix = "User:"
-    prefix    = "Assistant GPT4:"
-    eot_token = "<|end_of_turn|>"
-    bos_token = "<s>"
-
-    def _tokenize(text):
-        return tokenizer.convert_tokens_to_ids(tokenizer._tokenize(text))
-
-    def _tokenize_special(special_name):
-        return tokenizer.convert_tokens_to_ids(special_name)
-
-    return [_tokenize_special(bos_token)] + _tokenize(human_prefix) + _tokenize(prompt) + [_tokenize_special(eot_token)] + \
-          _tokenize(prefix)
-
-
 def set_manual_seed(seed):
     seed = int(seed)
     if seed == -1:
@@ -74,77 +59,100 @@ def set_manual_seed(seed):
 
 @torch.no_grad()
 def generate_text(model_id: str, params: dict) -> dict:
-    prompt = params['prompt']
-    context = params.get('context') or 'You are a helpful AI assistant.'
-    max_new_tokens = params.get('max_new_tokens', 512)
-    temperature = params.get('temperature', 1)
-    top_p = params.get('top_p', 1)
-    top_k = params.get('top_k', 0)
-    repetition_penalty = params.get('repetition_penalty', 1)
-    set_max_memory(params.get('mem_gpu', -1), params.get('mem_cpu', -1))
+    try:
+        prompt = params['prompt']
+        context = params.get('context') or 'You are a helpful AI assistant.'
+        max_new_tokens = params.get('max_new_tokens', 512)
+        temperature = params.get('temperature', 1)
+        top_p = params.get('top_p', 1)
+        top_k = params.get('top_k', 0)
+        repetition_penalty = params.get('repetition_penalty', 1)
+        set_max_memory(params.get('mem_gpu', -1), params.get('mem_cpu', -1))
 
-    progress_title("Loading the model")
-    progress(0, 100)
-    model, tokenizer = get_model(model_id)
-    if model is None:
+        progress_title("Loading the model")
+        progress(0, 100)
+        model, tokenizer = get_model(model_id)
+        if model is None:
+            return {
+                "html": "no model loaded",
+                "raw": "no model loaded"
+            }
+        progress_title("Generating text")
+
+        set_manual_seed(-1)
+
+        cfg = MODELS_MAP[model_id]
+        fallBackTemplate = '{instruction}\n\nUSER: {input}\nASSISTANT:'
+        for template in cfg['templates']:
+            if '{instruction}' in template and '{input}' in template:
+                hasTemplate = True
+                fallBackTemplate = template
+                break
+            elif '{input}' in template:
+                fallBackTemplate = template
+        if '{instruction}' in fallBackTemplate:
+            prompt = fallBackTemplate.format(instruction=context, input=prompt)
+        else:
+            prompt = fallBackTemplate.format(input=prompt)
+
+        response_prefix = cfg['response_after']
+
+        if cfg['loader'] == 'ctransformers':
+            inputs = str(prompt)
+        else:
+            inputs = tokenizer.encode(str(prompt), return_tensors='pt', add_special_tokens=True).to('cuda:0')
+        if cfg['loader'] == 'ctransformers':
+            output = ''
+            for txt in model(
+                        prompt=inputs,
+                        max_new_tokens=max_new_tokens,
+                        temperature=temperature,
+                        top_p=top_p,
+                        top_k=int(top_k),
+                        repetition_penalty=repetition_penalty,
+                        stream=True
+                    ):
+                progress_text(txt)
+                output = output + txt
+                if progress_canceled():
+                    break
+        else:
+            output = model.generate(
+                inputs=inputs,
+                max_new_tokens=max_new_tokens,
+                temperature=temperature,
+                top_p=top_p,
+                top_k=top_k,
+                repetition_penalty=repetition_penalty,
+                streamer=Streamer(tokenizer),
+                stopping_criteria=transformers.StoppingCriteriaList() + [
+                    CanceledChecker()
+                ]
+            )[0]
+
+        new_tokens = len(output) - len(inputs[0])
+        if cfg['loader'] == 'ctransformers':
+            response = output
+        else:
+            response = tokenizer.decode(output[-new_tokens:], True)
+
+        if 'ASSISTANT:' in response_prefix:
+            response = response.split('\n');
+            for i, v in enumerate(response):
+                if not v.startswith(response_prefix):
+                    continue
+                v = v.split(response_prefix, maxsplit=1)
+                response[i] = v[0] if len(v) < 2 else v[1]
+            response = '\n'.join(response)
+
+        del inputs
+        gc.collect()
         return {
-            "html": "no model loaded",
-            "raw": "no model loaded"
+            "html": convert2html(response),
+            "raw": response
         }
-    progress_title("Generating text")
-
-    set_manual_seed(-1)
-
-    cfg = MODELS_MAP[model_id]
-    fallBackTemplate = '{instruction}\n\nUSER: {input}\nASSISTANT:'
-    for template in cfg['templates']:
-        if '{instruction}' in template and '{input}' in template:
-            hasTemplate = True
-            fallBackTemplate = template
-            break
-        elif '{input}' in template:
-            fallBackTemplate = template
-    if '{instruction}' in fallBackTemplate:
-        prompt = fallBackTemplate.format(instruction=context, input=prompt)
-    else:
-        prompt = fallBackTemplate.format(input=prompt)
-    
-    if MODELS_MAP[model_id]['loader'] == 'auto_gpt_openchat':
-        prompt = tokenize_single_input(tokenizer, prompt)
-
-    response_prefix = cfg['response_after']
-    
-    # inputs = tokenizer(prompt, return_tensors="pt").input_ids.to('cuda:0')
-    inputs = tokenizer.encode(str(prompt), return_tensors='pt', add_special_tokens=True).to('cuda:0')
-
-    output = model.generate(
-        inputs=inputs,
-        max_new_tokens=max_new_tokens,
-        temperature=temperature,
-        top_p=top_p,
-        top_k=top_k,
-        repetition_penalty=repetition_penalty,
-        streamer=Streamer(tokenizer),
-        stopping_criteria=transformers.StoppingCriteriaList() + [
-            CanceledChecker()
-        ]
-    )[0]
-
-    new_tokens = len(output) - len(inputs[0])
-    response = tokenizer.decode(output[-new_tokens:], True)
-
-    if 'ASSISTANT:' in response_prefix:
-        response = response.split('\n');
-        for i, v in enumerate(response):
-            if not v.startswith(response_prefix):
-                continue
-            v = v.split(response_prefix, maxsplit=1)
-            response[i] = v[0] if len(v) < 2 else v[1]
-        response = '\n'.join(response)
-
-    del inputs
-    gc.collect()
-    return {
-        "html": convert2html(response),
-        "raw": response
-    }
+    except Exception as ex:
+        return {
+            "html": convert2html(str(ex) + str(traceback.format_exc())),
+            "raw": str(ex),
+        }

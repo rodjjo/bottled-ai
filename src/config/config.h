@@ -10,7 +10,7 @@ namespace bottled_ai
     int max_new_tokens = 512;
     float temperature = 1;
     float top_p = 1;
-    float top_k = 1;
+    float top_k = 0;
     float repetition_penalty = 1;
     std::string context = "You are a helpful AI assistant.";
   } model_config_t;

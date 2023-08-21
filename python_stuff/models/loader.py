@@ -4,6 +4,8 @@ import gc
 import torch
 from transformers import AutoTokenizer
 from auto_gptq import AutoGPTQForCausalLM
+from ctransformers import AutoModelForCausalLM
+
 from models.paths import CACHE_DIR
 from models.listing import MODELS_MAP, get_models_file, have_local_model
 
@@ -26,6 +28,7 @@ def get_model(repo_id: str) -> Tuple[AutoGPTQForCausalLM, AutoTokenizer]:
     return SELECTED_MODEL['model'], SELECTED_MODEL['tokenizer']
 
 
+
 def select_model(repo_id: str) -> bool:
     global SELECTED_MODEL
     if SELECTED_MODEL is not None and SELECTED_MODEL['repo_id'] == repo_id:
@@ -33,14 +36,22 @@ def select_model(repo_id: str) -> bool:
     unload_model()
     if not have_local_model(repo_id):
         return False
+    if MODELS_MAP[repo_id]['loader'] == 'auto_gptq':
+        return select_autogptq_model(repo_id)
+    if MODELS_MAP[repo_id]['loader'] == 'ctransformers':
+        return select_ggml_model(repo_id)
+    return False
+
+
+def select_autogptq_model(repo_id: str) -> bool:
+    global SELECTED_MODEL
     params = dict(
         device="cuda:0", 
         use_safetensors=True, 
         use_triton=False,
         cache_dir=CACHE_DIR,
         model_basename=MODELS_MAP[repo_id]['model_basename'],
-        local_files_only=True,
-        trust_remote_code=True
+        local_files_only=True
     )
     if MAX_MEMORY:
         params['max_memory'] = MAX_MEMORY
@@ -69,6 +80,29 @@ def select_model(repo_id: str) -> bool:
         ),
         'repo_id': repo_id
     }
+
+
+def select_ggml_model(repo_id):
+    global SELECTED_MODEL
+    
+    params = dict(
+        local_files_only=True,
+        model_type=MODELS_MAP[repo_id].get('model_type', 'gpt-2')
+    )
+    if MAX_MEMORY:
+        params['max_memory'] = MAX_MEMORY
+    local_file = get_models_file(repo_id)[0]
+    model = AutoModelForCausalLM.from_pretrained(
+        local_file, 
+        **params
+    )
+
+    SELECTED_MODEL = {
+        'model': model,
+        'tokenizer': None,
+        'repo_id': repo_id
+    }
+
 
 
 def unload_model():
