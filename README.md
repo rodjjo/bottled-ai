@@ -18,7 +18,7 @@ It supports several models, and more models are going to be added soon.
 
 
 Platforms:
-* Windows - There is an installer here: [Latest Release (windows)](https://github.com/rodjjo/bottled-ai/releases/download/v0.1.0/Bottled-AI-Setup.exe)
+* Windows - There is an installer here: [Latest Release (windows)](https://github.com/rodjjo/bottled-ai/releases/download/v0.2.0/Bottled-AI-Setup.exe)
 * Linux - Work In Progress
 * Mac - Future (Maybe)
 
