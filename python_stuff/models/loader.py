@@ -7,7 +7,7 @@ from auto_gptq import AutoGPTQForCausalLM
 from ctransformers import AutoModelForCausalLM
 
 from models.paths import CACHE_DIR
-from models.listing import MODELS_MAP, get_models_file, have_local_model
+from models.listing import get_models_map, get_models_file, have_local_model
 
 SELECTED_MODEL = None
 MAX_MEMORY = None
@@ -21,36 +21,38 @@ def set_max_memory(gpu, cpu):
             'cpu': f"{cpu / 1024.0}GiB"
         }
 
-def get_model(repo_id: str) -> Tuple[AutoGPTQForCausalLM, AutoTokenizer]:
-    select_model(repo_id)
+def get_model(repo_id: str, additional_model_dir: str) -> Tuple[AutoGPTQForCausalLM, AutoTokenizer]:
+    select_model(repo_id, additional_model_dir)
     if SELECTED_MODEL is None:
         return None, None
     return SELECTED_MODEL['model'], SELECTED_MODEL['tokenizer']
 
 
-
-def select_model(repo_id: str) -> bool:
+def select_model(repo_id: str, additional_model_dir : str) -> bool:
     global SELECTED_MODEL
     if SELECTED_MODEL is not None and SELECTED_MODEL['repo_id'] == repo_id:
         return True
     unload_model()
-    if not have_local_model(repo_id):
+    if not have_local_model(repo_id, additional_model_dir):
         return False
-    if MODELS_MAP[repo_id]['loader'] == 'auto_gptq':
-        return select_autogptq_model(repo_id)
-    if MODELS_MAP[repo_id]['loader'] == 'ctransformers':
-        return select_ggml_model(repo_id)
+    mdls = get_models_map(additional_model_dir)
+    if mdls[repo_id]['loader'] == 'auto_gptq':
+        return select_autogptq_model(repo_id, additional_model_dir)
+    if mdls[repo_id]['loader'] == 'ctransformers':
+        return select_ggml_model(repo_id, additional_model_dir)
     return False
 
 
-def select_autogptq_model(repo_id: str) -> bool:
+def select_autogptq_model(repo_id: str, additional_model_dir: str) -> bool:
     global SELECTED_MODEL
+    mdls = get_models_map(additional_model_dir)
+
     params = dict(
         device="cuda:0", 
         use_safetensors=True, 
         use_triton=False,
-        cache_dir=CACHE_DIR,
-        model_basename=MODELS_MAP[repo_id]['model_basename'],
+        cache_dir=mdls[repo_id].get('cache_dir', CACHE_DIR),
+        model_basename=mdls[repo_id]['model_basename'],
         local_files_only=True
     )
     if MAX_MEMORY:
@@ -82,21 +84,20 @@ def select_autogptq_model(repo_id: str) -> bool:
     }
 
 
-def select_ggml_model(repo_id):
+def select_ggml_model(repo_id, additional_model_dir: str):
     global SELECTED_MODEL
-    
+    mdls = get_models_map(additional_model_dir)
     params = dict(
         local_files_only=True,
-        model_type=MODELS_MAP[repo_id].get('model_type', 'gpt-2')
+        model_type=mdls[repo_id].get('model_type', 'gpt-2')
     )
     if MAX_MEMORY:
         params['max_memory'] = MAX_MEMORY
-    local_file = get_models_file(repo_id)[0]
+    local_file = get_models_file(repo_id, additional_model_dir)[0]
     model = AutoModelForCausalLM.from_pretrained(
         local_file, 
         **params
     )
-
     SELECTED_MODEL = {
         'model': model,
         'tokenizer': None,

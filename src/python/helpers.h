@@ -15,6 +15,7 @@ namespace py {
 
 typedef struct  {
     bool locally;
+    bool can_remove;
     std::string id;
     std::string name;
     std::string loader;

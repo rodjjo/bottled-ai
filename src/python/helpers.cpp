@@ -68,11 +68,12 @@ namespace bottled_ai
 
         callback_t list_models(model_callback_t status_cb)
         {
-            return [status_cb]
+            std::string additional_dir = getConfig().getAdditionalModelDir();
+            return [status_cb, additional_dir]
             {
                 try {
                     model_list_t models;
-                    auto r = bottled_ai::py::getModule().attr("list_models")();
+                    auto r = bottled_ai::py::getModule().attr("list_models")(additional_dir.c_str());
                     auto seq = r.cast<py11::sequence>();
                     for (size_t i = 0; i < seq.size(); ++i)
                     {
@@ -83,6 +84,10 @@ namespace bottled_ai
                         model.description = it["description"].cast<std::string>();
                         model.loader = it["loader"].cast<std::string>();
                         model.locally = it["locally"].cast<bool>();
+                        model.can_remove = false;
+                        if (it.contains("can_remove")) {
+                            model.can_remove = it["can_remove"].cast<bool>();
+                        }
                         models.push_back(model);
                     }
                     status_cb(true, NULL, models);  
@@ -150,6 +155,7 @@ namespace bottled_ai
             int mem_gpu = -1, mem_cpu = -1;
             c.getMaxMemory(mem_gpu, mem_cpu);
 
+            std::string additional_model_dir = c.getAdditionalModelDir();
             std::string instruction = cfg.context;
             int max_new_tokens = cfg.max_new_tokens;
             float temperature = cfg.temperature;
@@ -163,6 +169,7 @@ namespace bottled_ai
                 status_cb, 
                 repo_id, 
                 instruction, 
+                additional_model_dir,
                 input,
                 max_new_tokens,
                 temperature,
@@ -184,6 +191,7 @@ namespace bottled_ai
                     params["repetition_penalty"] = repetition_penalty;
                     params["mem_gpu"] = mem_gpu;
                     params["mem_cpu"] = mem_cpu;
+                    params["additional_model_dir"] = additional_model_dir;
                     auto r = bottled_ai::py::getModule().attr("generate_text")(repo_id, params);
                     auto html = r["html"].cast<std::string>();
                     auto raw = r["raw"].cast<std::string>();

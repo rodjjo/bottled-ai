@@ -4,13 +4,14 @@ from typing import List
 
 from models.paths import CACHE_DIR
 
-MODEL_LIST = [{
+_MODEL_LIST = [{
         'id': 'TheBloke/Nous-Hermes-13B-GPTQ',
         'name': 'Nous-Hermes-13b (GPTQ)',
         'model_basename': 'nous-hermes-13b-GPTQ-4bit-128g.no-act.order',
         'dirname': os.path.join(CACHE_DIR, 'models--TheBloke--Nous-Hermes-13B-GPTQ'),
         'loader': 'auto_gptq',
         'locally': False,
+        'can_remove': True,
         'description': (
             'Nous-Hermes-13b is a state-of-the-art language model fine-tuned on over 300,000 instructions.'
             'This model was fine-tuned by Nous Research, with Teknium and Karan4D leading the fine tuning process and dataset curation,'
@@ -30,6 +31,7 @@ MODEL_LIST = [{
         'dirname': os.path.join(CACHE_DIR, 'models--TheBloke--Wizard-Vicuna-13B-Uncensored-GPTQ'),
         'loader': 'auto_gptq',
         'locally': False, 
+        'can_remove': True,
         'description': (
             'This is wizard-vicuna-13b trained with a subset of the dataset - responses that contained alignment / moralizing were removed.\n'
             'The intent is to train a WizardLM that doesn\'t have alignment built-in, so that alignment (of any sort) can be added separately '
@@ -48,6 +50,7 @@ MODEL_LIST = [{
         'dirname': os.path.join(CACHE_DIR, 'models--TheBloke--openchat_v2_w-GPT'),
         'loader': 'auto_gptq_openchat',
         'locally': False, 
+        'can_remove': True,
         'description': (
             'The OpenChat v2 family is inspired by offline reinforcement learning, '
             'including conditional behavior cloning (OpenChat-v2) and weighted behavior cloning (OpenChat-v2-w).'
@@ -62,6 +65,7 @@ MODEL_LIST = [{
         'dirname': os.path.join(CACHE_DIR, 'models--TheBloke--WizardLM-7B-uncensored-GPTQ'),
         'loader': 'auto_gptq',
         'locally': False, 
+        'can_remove': True,
         'description': (
            'This is WizardLM trained with a subset of the dataset - responses that contained alignment / moralizing were removed.\n' 
            'The intent is to train a WizardLM that doesn\'t have alignment built-in, so that alignment (of any sort) can be added separately '
@@ -79,6 +83,7 @@ MODEL_LIST = [{
         'dirname': os.path.join(CACHE_DIR, 'models--TheBloke--Nous-Hermes-Llama-2-7B-GPTQ'),
         'loader': 'auto_gptq',
         'locally': False, 
+        'can_remove': True,
         'description': (
            'Nous-Hermes-Llama2-7b is a state-of-the-art language model fine-tuned on over 300,000 instructions.\n'
            'This model was fine-tuned by Nous Research, with Teknium leading the fine tuning process and dataset curation, '
@@ -96,6 +101,7 @@ MODEL_LIST = [{
         'dirname': os.path.join(CACHE_DIR, 'models--TheBloke--StableBeluga-7B-GPTQ'),
         'loader': 'auto_gptq',
         'locally': False, 
+        'can_remove': True,
         'description': (
            'Stable Beluga 7B is a Llama2 7B model finetuned on an Orca style Dataset'
         ),
@@ -111,6 +117,7 @@ MODEL_LIST = [{
         'dirname': os.path.join(CACHE_DIR, 'models--TheBloke--stablecode-instruct-alpha-3b-GPTQ'),
         'loader': 'auto_gptq',
         'locally': False, 
+        'can_remove': True,
         'have_tokenizer_model': False,
         'description': (
            'The model is intended to follow instruction to generate code. The dataset used to train the model is formatted in Alpaca format.'
@@ -127,6 +134,7 @@ MODEL_LIST = [{
         'loader': 'ctransformers',
         'model_type': 'llama',
         'locally': False, 
+        'can_remove': True,
         'have_tokenizer_model': False,
         'description': (
            'It runs using the CPU.\nAn OpenLLaMa-3B model model trained on explain tuned datasets, created using Instructions and Input from WizardLM, Alpaca & Dolly-V2 datasets and applying Orca Research Paper dataset construction approaches.'
@@ -143,6 +151,7 @@ MODEL_LIST = [{
         'loader': 'ctransformers',
         'model_type': 'llama',
         'locally': False, 
+        'can_remove': True,
         'have_tokenizer_model': False,
         'description': (
            'It runs using the CPU.\nNous-Hermes-Llama2-13b is a state-of-the-art language model fine-tuned on over 300,000 instructions. This model was fine-tuned by Nous Research, with Teknium and Emozilla leading the fine tuning process and dataset curation, Redmond AI sponsoring the compute, and several other contributors.'
@@ -151,25 +160,80 @@ MODEL_LIST = [{
         'templates': [
             '### Instruction:\n{instruction}\n### Input:\n{input}\n### Response:\n',
         ]
-    },
+    }
 ]
 
-MODELS_MAP = {
-    v['id']: v for v in MODEL_LIST
+_MODELS_MAP = {
+    v['id']: v for v in _MODEL_LIST
 }
 
-def list_models() -> List[dict]:
-    for element in MODEL_LIST:
-        element['locally'] = have_local_model(
-            element['id']
-        )
-    return MODEL_LIST
+def get_additional_models(dirpath) -> List[dict]:
+    result = []
+    if not dirpath:
+        return result
+    files = os.listdir(dirpath)
+    for d in sorted(files):
+        if d.endswith('.bin') and 'ggml' in d:
+            result.append({
+                'id': os.path.join(dirpath, d),
+                'name': d,
+                'model_basename': d.rsplit('.', maxsplit=1)[0],
+                'dirname': dirpath,
+                'loader': 'ctransformers',
+                'model_type': 'llama',
+                'locally': False, 
+                'have_tokenizer_model': False,
+                'description': (
+                    'A custom ggml model placed by the user at the additional models directory.\nIf you want to remove go to the directory: '
+                    f'{dirpath} and remove the file {d}'
+                ),
+                'response_after': '### Response:\n',
+                'templates': [
+                    '### Instruction:\n{instruction}\n### Input:\n{input}\n### Response:\n',
+                ]
+            })
+    return result
+
+def get_models_map(dirname: str = ''):
+    result = {
+        v['id']: v for v in get_additional_models(dirname) + get_additional_models(CACHE_DIR)
+    }
+    result.update(_MODELS_MAP)
+    if dirname != '' and CACHE_DIR not in dirname:
+        for k, v in result.items():
+            if CACHE_DIR not in v['dirname'] or os.path.exists(v['dirname']):
+                continue
+            n = v['dirname']
+            n = n.replace(CACHE_DIR, '')
+            if n.startswith('/') or n.startswith('\\'):
+                n = n[1:]
+            n = os.path.join(dirname, n)
+            if os.path.exists(n):
+                v['dirname'] = n
+                v['cache_dir'] = dirname
+            result[k] = v
+    return result
 
 
-def get_models_file(repo_id) -> List[str]:
-    mdl = MODELS_MAP[repo_id]
+def list_models(additional_dir) -> List[dict]:
+    try:
+        models = list(get_models_map(additional_dir).values())
+        for element in models:
+            element['locally'] = have_local_model(
+                element['id'],
+                additional_dir
+            )
+        return models
+    except Exception as ex:
+        print(str(ex))
+        return []
+
+
+def get_models_file(repo_id, additional_model_dir) -> List[str]:
+    mdl = get_models_map(additional_model_dir)[repo_id]
     basedir = os.path.join(mdl['dirname'], 'snapshots') 
     if not os.path.exists(basedir):
+        basedir = mdl['dirname']
         contents = []
     else:
         contents = os.listdir(basedir)
@@ -202,8 +266,8 @@ def get_models_file(repo_id) -> List[str]:
     ] + params
 
 
-def have_local_model(repo_id) -> bool:
-    files = get_models_file(repo_id)
+def have_local_model(repo_id, additional_model_dir) -> bool:
+    files = get_models_file(repo_id, additional_model_dir)
     if len(files) < 1:
         return False
     for f in files:

@@ -30,17 +30,24 @@ std::string model2html(const py::model_t& model) {
     ss << "</font></p>";
     ss << "<center>";
     if (model.locally) {
-        ss << "<a href=\"/?remove-";
+        if (model.can_remove) {
+            ss << "<a href=\"/?remove-";
+            ss << model.id << "\">";
+        }
     } else {
         ss << "<a href=\"/?download-";
+        ss << model.id << "\">";
     }
-    ss << model.id << "\">";
     if (model.locally) {
-        ss << "[REMOVE THIS MODEL]";
+        if (model.can_remove) {
+            ss << "[REMOVE THIS MODEL]";
+            ss << "</a></center>";
+        }
     } else {
         ss << "[DOWNLOAD THIS MODEL]";
+        ss << "</a></center>";
     }
-    ss << "</a></center>";
+    
     return ss.str();
 }
 

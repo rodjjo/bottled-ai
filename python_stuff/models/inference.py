@@ -7,7 +7,7 @@ from datetime import datetime
 import transformers
 
 from models.loader import get_model, set_max_memory
-from models.listing import MODELS_MAP
+from models.listing import get_models_map
 from text_helper.text_helper import convert2html
 
 
@@ -67,11 +67,12 @@ def generate_text(model_id: str, params: dict) -> dict:
         top_p = params.get('top_p', 1)
         top_k = params.get('top_k', 0)
         repetition_penalty = params.get('repetition_penalty', 1)
+        additional_model_dir = params.get('additional_model_dir', '')
         set_max_memory(params.get('mem_gpu', -1), params.get('mem_cpu', -1))
 
         progress_title("Loading the model")
         progress(0, 100)
-        model, tokenizer = get_model(model_id)
+        model, tokenizer = get_model(model_id, additional_model_dir)
         if model is None:
             return {
                 "html": "no model loaded",
@@ -81,7 +82,7 @@ def generate_text(model_id: str, params: dict) -> dict:
 
         set_manual_seed(-1)
 
-        cfg = MODELS_MAP[model_id]
+        cfg = get_models_map(additional_model_dir)[model_id]
         fallBackTemplate = '{instruction}\n\nUSER: {input}\nASSISTANT:'
         for template in cfg['templates']:
             if '{instruction}' in template and '{input}' in template:

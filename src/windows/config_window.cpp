@@ -45,8 +45,8 @@ ConfigWindow::ConfigWindow() {
     max_memory_gpu_->align(FL_ALIGN_TOP_LEFT);
     max_memory_cpu_->align(FL_ALIGN_TOP_LEFT);
 
-    add_model_dir_->tooltip("The additional directory for stable diffusion models");
-    add_lora_dir_->tooltip("The additional directory for lora model");
+    add_model_dir_->tooltip("The additional models' directory");
+    add_lora_dir_->tooltip("The additional directory for lora models");
     max_memory_gpu_->tooltip("Limit GPU memory");
     max_memory_cpu_->tooltip("Limit CPU memory");
 

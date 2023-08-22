@@ -143,6 +143,7 @@ void MainWindow::alignComponents() {
 
 void MainWindow::editConfig() {
     show_configuration(); 
+    load_model_list();
 }
 
 void MainWindow::resize(int x, int y, int w, int h) {

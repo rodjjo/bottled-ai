@@ -4,7 +4,7 @@ from shutil import rmtree
 from transformers.utils.hub import cached_file
 from models.paths import CACHE_DIR
 from models.loader import unload_model, have_local_model, get_models_file
-from models.listing import MODELS_MAP
+from models.listing import get_models_map
 
 from bottled_ai import progress_title
 
@@ -29,5 +29,7 @@ def download_model(repo_id: str) -> bool:
             return False
 
 def remove_model(repo_id: str) -> bool:
-    rmtree(MODELS_MAP[repo_id]['dirname'], ignore_errors=True)
+    mdls = get_models_map('')
+    if repo_id in mdls:
+        rmtree(mdls[repo_id]['dirname'], ignore_errors=True)
     return False
