@@ -6,7 +6,7 @@ accelerate==0.20.3.
 numpy==1.23.5
 transformers==4.31.0
 safetensors==0.3.1
-GitPython==3.1.31
+GitPython==3.1.32
 pytorch_lightning==2.0.2
 torchdiffeq==0.2.3
 markdown==3.4.4
